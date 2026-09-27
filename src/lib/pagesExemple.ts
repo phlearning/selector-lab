@@ -1,3 +1,5 @@
+import { envelopper } from './document';
+
 /** Les Pages d'exemple : ressource unique partagée par la Référence, le Testeur et les Scénarios e2e. */
 
 const sources = import.meta.glob<string>('../pages-exemple/*.html', {
@@ -46,5 +48,5 @@ export function pageExemple(id: string): PageExemple {
 
 /** Document HTML complet construit à partir d'une Page d'exemple, sans exécuter de script. */
 export function documentHtml(page: PageExemple): string {
-  return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>${page.titre}</title></head><body>\n${page.html}</body></html>`;
+  return envelopper(page.html, page.titre);
 }

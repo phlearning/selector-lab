@@ -1,8 +1,18 @@
 ---
+import Testeur from '../components/testeur/Testeur';
 import Base from '../layouts/Base.astro';
+import { pagesExemple } from '../lib/pagesExemple';
+import { liensReferenceParCle } from '../lib/reference';
+
+const pages = pagesExemple.map(({ id, titre, html }) => ({ id, titre, html }));
+const liensReference = await liensReferenceParCle();
 ---
 
-<Base title="Testeur">
+<Base title="Testeur" description="Évaluer un sélecteur CSS, XPath ou une expression de l'API DOM sur une page d'exemple ou sur votre propre HTML.">
   <h1>Testeur</h1>
-  <p class="notice">En construction : cette partie arrive au jalon 3.</p>
+  <p class="intro-testeur">
+    Évaluez un sélecteur sur une Page d'exemple ou sur votre propre HTML. C'est le moteur de <strong>votre</strong> navigateur qui répond : le résultat peut différer d'un navigateur à l'autre.
+  </p>
+  <Testeur client:only="preact" pages={pages} base={import.meta.env.BASE_URL} liensReference={liensReference} />
+  <noscript><p class="notice">Le Testeur a besoin de JavaScript pour évaluer les sélecteurs.</p></noscript>
 </Base>

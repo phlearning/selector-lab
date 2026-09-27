@@ -528,3 +528,272 @@ main {
   background: none;
   padding: 0;
 }
+
+/* Boutons */
+.bouton {
+  display: inline-block;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.bouton--secondaire {
+  background: transparent;
+  color: var(--accent);
+}
+
+.essayer {
+  flex: none;
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.essayer--petit {
+  font-size: 0.7rem;
+}
+
+/* Testeur */
+.intro-testeur {
+  max-width: 50rem;
+  color: var(--fg-muted);
+}
+
+.testeur {
+  display: grid;
+  grid-template-columns: minmax(0, 26rem) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 56rem) {
+  .testeur {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.testeur__saisie {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.testeur__langages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.testeur__langages legend {
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.choix {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.choix--actif {
+  border-color: var(--accent);
+  background: var(--code-bg);
+  font-weight: 600;
+}
+
+.testeur__champ {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-weight: 600;
+}
+
+.testeur__champ small {
+  font-weight: normal;
+  color: var(--fg-muted);
+}
+
+.testeur textarea,
+.testeur select {
+  font: inherit;
+  font-weight: normal;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.6rem;
+}
+
+.testeur textarea {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  resize: vertical;
+}
+
+.testeur textarea:focus,
+.testeur select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.testeur__partage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.testeur__alerte {
+  color: var(--warn);
+}
+
+.testeur__resultat {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  background: var(--bg-soft);
+}
+
+.testeur__resultat p {
+  margin: 0.25rem 0;
+}
+
+.testeur__vide {
+  color: var(--fg-muted);
+}
+
+.testeur__erreur {
+  color: var(--ko);
+}
+
+.testeur__aide {
+  border-left: 3px solid var(--warn);
+  padding-left: 0.6rem;
+  font-size: 0.9rem;
+}
+
+.testeur__noeuds {
+  margin: 0.5rem 0 0;
+  padding-left: 1.5rem;
+  max-height: 18rem;
+  overflow-y: auto;
+}
+
+.noeud {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 0.1rem 0.25rem;
+  cursor: pointer;
+}
+
+.noeud:hover,
+.noeud--actif {
+  border-color: var(--warn);
+}
+
+.noeud code {
+  background: none;
+  padding: 0;
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.avertissement {
+  border: 1px solid var(--warn);
+  background: var(--warn-bg);
+  border-radius: var(--radius);
+  padding: 0.5rem 1rem 0.75rem;
+}
+
+.testeur__apercu {
+  position: sticky;
+  top: 1rem;
+}
+
+.testeur__iframe {
+  width: 100%;
+  height: min(75vh, 48rem);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.analyse h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.analyse__intro {
+  margin: 0.25rem 0 0.5rem;
+  color: var(--fg-muted);
+  font-size: 0.875rem;
+}
+
+.analyse__liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.analyse__item {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+}
+
+.analyse__nom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.analyse__baseline,
+.analyse__inconnu {
+  font-size: 0.8rem;
+}
+
+.analyse__inconnu {
+  color: var(--warn);
+}
+
+.analyse__navigateurs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  list-style: none;
+  padding: 0;
+  margin: 0.3rem 0 0;
+}
+
+.analyse__navigateurs .nav {
+  min-width: 5.5rem;
+}

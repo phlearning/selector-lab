@@ -4,6 +4,7 @@ import Resultat from '../../components/Resultat.astro';
 import Reference from '../../layouts/Reference.astro';
 import { mdInline } from '../../lib/markdown';
 import { pageExemple } from '../../lib/pagesExemple';
+import { lienTesteur } from '../../lib/partage';
 import { url } from '../../lib/url';
 import source from '../../content/comparaison.yaml?raw';
 
@@ -44,8 +45,27 @@ const lignes = (await getCollection('comparaison')).sort((a, b) => ordre.indexOf
               </small>
               {data.note && <small set:html={mdInline(data.note)} />}
             </th>
-            <td>{data.css ? <code>{data.css}</code> : <span class="impossible">Impossible</span>}</td>
-            <td>{data.xpath ? <code>{data.xpath}</code> : <span class="impossible">Impossible</span>}</td>
+            {(['css', 'xpath'] as const).map((langage) => {
+              const selecteur = data[langage];
+              return (
+                <td>
+                  {selecteur ? (
+                    <>
+                      <code>{selecteur}</code>{' '}
+                      <a
+                        class="essayer essayer--petit"
+                        href={lienTesteur(url('testeur/'), { langage, selecteur, page: data.page })}
+                        aria-label={`Essayer ${selecteur} dans le Testeur`}
+                      >
+                        Essayer
+                      </a>
+                    </>
+                  ) : (
+                    <span class="impossible">Impossible</span>
+                  )}
+                </td>
+              );
+            })}
             <td><Resultat attendu={data.attendu} /></td>
           </tr>
         ))}

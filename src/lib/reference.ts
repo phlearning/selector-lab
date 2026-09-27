@@ -28,3 +28,15 @@ export async function themesTries(): Promise<Theme[]> {
 export function cleExemple(theme: Theme, entree: Entree, index: number): string {
   return `${theme.id}#${entree.id}/${index + 1}`;
 }
+
+/** Pour chaque clé de compatibilité MDN, le lien vers la première Entrée de référence qui la documente. */
+export async function liensReferenceParCle(): Promise<Record<string, string>> {
+  const liens: Record<string, string> = {};
+  for (const theme of await themesTries()) {
+    for (const entree of theme.data.entrees) {
+      const cles = entree.bcd ? (Array.isArray(entree.bcd) ? entree.bcd : [entree.bcd]) : [];
+      for (const cle of cles) liens[cle] ??= `reference/${theme.data.langage}/${slugTheme(theme)}/#${entree.id}`;
+    }
+  }
+  return liens;
+}

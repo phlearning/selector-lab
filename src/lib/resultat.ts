@@ -85,18 +85,23 @@ function evaluerXPath(doc: Document, expression: string): ResultatType {
   }
 }
 
+// Vérifications structurelles plutôt que `instanceof` : les nœuds d'une iframe (le Testeur)
+// appartiennent à un autre contexte JavaScript et ne sont pas des instances du `Node` de la page.
+function estNoeud(valeur: unknown): valeur is Node {
+  return typeof valeur === 'object' && valeur !== null && typeof (valeur as Node).nodeType === 'number' && 'nodeName' in valeur;
+}
+
 function estListeDeNoeuds(valeur: unknown): valeur is ArrayLike<Node> {
-  return (
-    valeur instanceof NodeList ||
-    valeur instanceof HTMLCollection ||
-    (Array.isArray(valeur) && valeur.every((v) => v instanceof Node))
-  );
+  if (Array.isArray(valeur)) return valeur.every(estNoeud);
+  if (typeof valeur !== 'object' || valeur === null) return false;
+  const liste = valeur as { length?: unknown; item?: unknown };
+  return typeof liste.length === 'number' && typeof liste.item === 'function';
 }
 
 /** Normalise la valeur renvoyée par une expression de l'API DOM. */
 function normaliserValeurDom(valeur: unknown): ResultatType {
   if (valeur === null || valeur === undefined) return { type: 'noeuds', noeuds: [] };
-  if (valeur instanceof Node) return { type: 'noeuds', noeuds: [valeur] };
+  if (estNoeud(valeur)) return { type: 'noeuds', noeuds: [valeur] };
   if (estListeDeNoeuds(valeur)) return { type: 'noeuds', noeuds: Array.from(valeur) };
   if (typeof valeur === 'number') return { type: 'nombre', valeur };
   if (typeof valeur === 'string') return { type: 'chaine', valeur };
@@ -121,7 +126,9 @@ export function evaluer(doc: Document, langage: Langage, selecteur: string): Res
       }
     }
   } catch (e) {
-    return { type: 'erreur', message: e instanceof Error ? e.message : String(e) };
+    // Les erreurs levées dans une iframe ne sont pas des instances du `Error` de la page.
+    const message = typeof e === 'object' && e !== null && 'message' in e ? String(e.message) : String(e);
+    return { type: 'erreur', message };
   }
 }
 

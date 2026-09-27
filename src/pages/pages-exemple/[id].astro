@@ -1,6 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { documentHtml, pagesExemple, type PageExemple } from '../../lib/pagesExemple';
+import { lienTesteur } from '../../lib/partage';
+import { url } from '../../lib/url';
 
 export function getStaticPaths() {
   return pagesExemple.map((page) => ({ params: { id: page.id }, props: { page } }));
@@ -12,6 +14,7 @@ const { page } = Astro.props as { page: PageExemple };
 <Base title={page.titre}>
   <h1>{page.titre}</h1>
   <p>{page.description}</p>
+  <p><a class="bouton" href={lienTesteur(url('testeur/'), { langage: 'css', selecteur: '', page: page.id })}>Ouvrir dans le Testeur</a></p>
   <div class="page-exemple">
     <section>
       <h2>Rendu</h2>
