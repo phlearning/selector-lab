@@ -16,16 +16,24 @@
       import { envelopper } from '../lib/document';
       import { documentHtml, pageExemple } from '../lib/pagesExemple';
       import { evaluer, serialiser, type Langage } from '../lib/resultat';
+      import { stylerPageExemple } from '../lib/stylesPagesExemple';
 
       function htmlDe(page: string | null, html?: string): string {
         return page === null ? envelopper(html ?? '', 'Niveau') : documentHtml(pageExemple(page));
       }
 
       /** Document affiché dans une iframe : nécessaire aux Requêtes ARIA (rôles, visibilité, noms). */
-      function documentAffiche(html: string): Promise<{ doc: Document; retirer: () => void }> {
+      function documentAffiche(html: string, page: string | null): Promise<{ doc: Document; retirer: () => void }> {
         return new Promise((resolve) => {
           const iframe = document.createElement('iframe');
-          iframe.addEventListener('load', () => resolve({ doc: iframe.contentDocument!, retirer: () => iframe.remove() }), { once: true });
+          iframe.addEventListener(
+            'load',
+            () => {
+              if (page) stylerPageExemple(iframe.contentDocument!, page);
+              resolve({ doc: iframe.contentDocument!, retirer: () => iframe.remove() });
+            },
+            { once: true },
+          );
           iframe.srcdoc = html;
           document.body.append(iframe);
         });
@@ -37,7 +45,7 @@
           async verifier(page: string | null, langage: Langage, selecteur: string, html?: string) {
             const source = htmlDe(page, html);
             if (langage === 'aria') {
-              const { doc, retirer } = await documentAffiche(source);
+              const { doc, retirer } = await documentAffiche(source, page);
               try {
                 return serialiser(evaluer(doc, langage, selecteur));
               } finally {

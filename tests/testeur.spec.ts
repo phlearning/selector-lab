@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 const apercu = (page: Page) => page.frameLocator('iframe[title="Aperçu du Document cible"]');
 const resultat = (page: Page) => page.getByRole('region', { name: 'Résultat' });
-const champSelecteur = (page: Page) => page.getByRole('textbox', { name: 'Sélecteur' });
+const champSelecteur = (page: Page) => page.getByRole('textbox', { name: 'Sélecteur', exact: true });
 
 function lien(params: Record<string, string>): string {
   return `testeur/#${new URLSearchParams(params).toString()}`;

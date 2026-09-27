@@ -6,6 +6,8 @@
  * sont des attributs retirés avant chaque évaluation, pour que le joueur ne puisse jamais les sélectionner.
  */
 
+import { adopterStyles, stylerPageExemple } from '../../lib/stylesPagesExemple';
+
 export const MARQUES = ['data-jeu-cible', 'data-jeu-trouve', 'data-jeu-survol', 'data-jeu-reussi'] as const;
 export type Marque = (typeof MARQUES)[number];
 
@@ -76,13 +78,11 @@ marque-page[couleur="vert"] { background: #059669; }
 `;
 
 /**
- * Scénarios e2e : la Page d'exemple garde son rendu par défaut. Les cibles clignotent (ombre) au lieu de
- * sauter, ce qui fonctionne aussi sur les lignes de tableau ; le contour reste libre pour les nœuds trouvés.
+ * Scénarios e2e : la Page d'exemple garde son propre style (voir stylesPagesExemple.ts). Les cibles pulsent
+ * (ombre) au lieu de sauter, ce qui fonctionne aussi sur les lignes de tableau ; le contour reste libre pour
+ * les nœuds trouvés.
  */
-const STYLE_SCENARIO = `
-html { background: #fff; color: #111; color-scheme: light; }
-body { margin: 16px; font-family: system-ui, sans-serif; line-height: 1.45; }
-img { width: 48px; height: 48px; background: #e5e7eb; }
+const STYLE_MARQUES_SCENARIO = `
 [data-jeu-cible] { animation: cible 0.9s ease-in-out infinite alternate; }
 [data-jeu-trouve] { outline: 3px dashed #0f766e; outline-offset: 3px; }
 [data-jeu-survol] { background-color: rgb(245 158 11 / 0.25) !important; }
@@ -93,14 +93,13 @@ img { width: 48px; height: 48px; background: #e5e7eb; }
 }
 `;
 
-/** Applique le style de la Scène sans modifier le DOM du document. */
-export function styler(doc: Document, scenario = false): void {
-  const fenetre = doc.defaultView as (Window & typeof globalThis) | null;
-  if (!fenetre) return;
-  // La feuille doit être construite dans le contexte de l'iframe pour pouvoir y être adoptée.
-  const feuille = new fenetre.CSSStyleSheet();
-  feuille.replaceSync(scenario ? STYLE_SCENARIO : STYLE_SCENE);
-  doc.adoptedStyleSheets = [feuille];
+/**
+ * Applique le style de la Scène sans modifier le DOM du document : la bibliothèque dessinée, ou la Page
+ * d'exemple d'un Scénario avec ses propres styles, puis les marques du Jeu par-dessus.
+ */
+export function styler(doc: Document, page?: string): void {
+  if (page) stylerPageExemple(doc, page, [STYLE_MARQUES_SCENARIO]);
+  else adopterStyles(doc, [STYLE_SCENE]);
 }
 
 /** Une Scène ne doit jamais naviguer ni envoyer de formulaire quand le joueur clique dedans. */

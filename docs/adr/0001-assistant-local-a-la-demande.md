@@ -11,6 +11,7 @@ Selector Lab est hébergé sur GitHub Pages, sans backend : l'Assistant ne peut 
 - Un petit modèle se trompe souvent de syntaxe : tout Sélecteur produit par l'Assistant passe par la Validation (évaluation réelle par `querySelectorAll`, `document.evaluate` ou Testing Library) avant d'être affiché, avec un avertissement en cas d'échec.
 - L'Assistant n'expose que des Actions cadrées (et un champ libre dans le Testeur seulement) plutôt qu'un chat ouvert, car un petit modèle est fiable sur un prompt contraint, pas sur une conversation générale.
 - Les Indices des Niveaux sont écrits à la main ; l'Indice personnalisé n'est qu'un complément. Aucune fonctionnalité ne doit dépendre de la disponibilité de l'Assistant.
+- Deux tailles de modèle WebLLM sont proposées, avec leur poids affiché avant le clic : Qwen2.5-Coder 0.5B (290 Mo, pour les machines modestes) et 1.5B (880 Mo, meilleures réponses). Le modèle tourne dans un Web Worker, et la bibliothèque WebLLM (environ 6 Mo) n'est elle-même chargée qu'après l'activation.
 
 ## Options écartées
 

@@ -1,0 +1,135 @@
+/*
+ * Styles communs aux Pages d'exemple. Ils sont appliqués par `adoptedStyleSheets` : ils ne modifient jamais
+ * le DOM (aucune balise ajoutée), donc jamais le résultat d'un sélecteur. Règles à respecter ici :
+ * ne rien masquer (pas de `display: none`, ne pas redéfinir `[hidden]`) et ne pas générer de texte
+ * (`content:`), qui entrerait dans le calcul des noms accessibles.
+ */
+:root {
+  color-scheme: light;
+  --encre: #1f2430;
+  --encre-douce: #5b6474;
+  --trait: #dfe3ea;
+  --fond: #f5f6f9;
+  --carte: #ffffff;
+  --marque: #4f46e5;
+  --marque-fonce: #4338ca;
+  --danger: #dc2626;
+  --succes: #15803d;
+  --alerte: #b45309;
+  --rayon: 10px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--fond);
+  color: var(--encre);
+  font: 15px/1.5 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 24px;
+}
+
+h1 {
+  margin: 0 0 20px;
+  font-size: 1.6rem;
+  letter-spacing: -0.01em;
+}
+
+a {
+  color: var(--marque);
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+  color: inherit;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+input[type="search"],
+input[type="number"],
+select,
+textarea {
+  padding: 8px 10px;
+  border: 1px solid #c9ced8;
+  border-radius: 8px;
+  background: #fff;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid var(--marque);
+  outline-offset: 1px;
+}
+
+input[readonly] {
+  background: var(--fond);
+  color: var(--encre-douce);
+}
+
+.btn,
+button {
+  padding: 7px 14px;
+  border: 1px solid #c9ced8;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.btn--primaire {
+  background: var(--marque);
+  border-color: var(--marque);
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn--primaire:hover {
+  background: var(--marque-fonce);
+}
+
+.btn--secondaire {
+  background: transparent;
+}
+
+.btn--danger {
+  color: var(--danger);
+  border-color: #f3b4b4;
+}
+
+.btn--lien {
+  border: 0;
+  background: none;
+  color: var(--marque);
+  text-decoration: underline;
+  padding: 4px 0;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Images absentes du site : un emplacement neutre plutôt qu'une icône cassée. */
+img {
+  display: block;
+  width: 56px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+  color: transparent;
+  font-size: 0;
+}

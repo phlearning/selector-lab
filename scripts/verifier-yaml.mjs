@@ -1,4 +1,5 @@
-// Vérifie la syntaxe YAML du contenu (plus lisible que l'erreur du build) et les pièges connus.
+// Vérifie la syntaxe YAML du contenu (plus lisible que l'erreur du build), les pièges connus,
+// et que les styles des Pages d'exemple ne peuvent pas modifier le résultat d'un sélecteur.
 import { readFileSync } from 'node:fs';
 import { globSync } from 'node:fs';
 import { parse } from 'yaml';
@@ -21,4 +22,21 @@ for (const chemin of globSync('src/content/**/*.yaml')) {
     console.error(`${chemin}\n  ${e.message.split('\n')[0]}`);
   }
 }
+// Styles des Pages d'exemple : ils ne doivent rien masquer ni générer de texte, sinon un sélecteur
+// (surtout une Requête ARIA) donnerait un résultat différent selon qu'ils sont appliqués ou non.
+for (const chemin of globSync('src/pages-exemple/styles/*.css')) {
+  const css = readFileSync(chemin, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  for (const [motif, raison] of [
+    [/display\s*:\s*none/, 'display: none masquerait des éléments'],
+    [/(^|[^-])content\s*:/m, 'content: ajouterait du texte au nom accessible'],
+    [/\[hidden\]/, "[hidden] ne doit pas être redéfini"],
+    [/visibility\s*:\s*hidden/, 'visibility: hidden masquerait des éléments'],
+  ]) {
+    if (motif.test(css)) {
+      erreurs++;
+      console.error(`${chemin}\n  Règle interdite : ${raison}.`);
+    }
+  }
+}
+
 process.exit(erreurs ? 1 : 0);

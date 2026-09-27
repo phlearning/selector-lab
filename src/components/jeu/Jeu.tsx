@@ -2,7 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { envelopper } from '../../lib/document';
 import { diagnostiquer } from '../../lib/diagnostic';
 import { avecReussite, charger, enregistrer, estReussi, progressionVide, type Mode, type Progression } from '../../lib/progression';
-import { evaluer, memeResultat, type ResultatType } from '../../lib/resultat';
+import type { ContexteIndice } from '../../lib/assistant/actions';
+import { extraitHtml } from '../../lib/assistant/actions';
+import { etiquette, evaluer, memeResultat, type ResultatType } from '../../lib/resultat';
+import { IndicePersonnalise } from '../assistant/IndicePersonnalise';
 import { arbre, Balisage, type NoeudBalisage } from './Balisage';
 import { elementsDeScene, figer, marquer, retirerMarques, styler } from './scene';
 
@@ -14,6 +17,8 @@ export interface NiveauProp {
   consigne: string;
   /** Document complet de la Scène : bibliothèque dessinée ou Page d'exemple. */
   html: string;
+  /** Page d'exemple d'un Scénario e2e, pour lui appliquer son style. */
+  page?: string;
   solutions: Record<Mode, string | null>;
   recommande?: Mode;
   /** Indices et Leçon déjà convertis en HTML au build. */
@@ -218,6 +223,27 @@ export default function Jeu({ niveaux, chapitres, base }: Props) {
     champ.current?.classList.add('secoue');
   };
 
+  /** Contexte de l'Indice personnalisé : la tentative et ses écarts, jamais la Solution de référence. */
+  const contexteIndice = (): ContexteIndice | null => {
+    if (!reponse.trim() || retour.type === 'reussite') return null;
+    const r = actualiser();
+    const doc = iframe.current?.contentDocument;
+    if (!r || !r.joueur || !doc) return null;
+    const attendus = r.cibles.type === 'noeuds' ? r.cibles.noeuds : [];
+    const trouves = r.joueur.type === 'noeuds' ? r.joueur.noeuds : [];
+    return {
+      consigne: niveau.consigne,
+      langage: mode,
+      reponse,
+      html: extraitHtml(doc),
+      attendus: attendus.map(etiquette),
+      enTrop: trouves.filter((n) => !attendus.includes(n)).map(etiquette),
+      manquants: attendus.filter((n) => !trouves.includes(n)).map(etiquette),
+      typeAttendu: TYPE_ATTENDU[r.cibles.type],
+      typeObtenu: r.joueur.type === 'erreur' ? `une erreur (${r.joueur.message})` : decrire(r.joueur),
+    };
+  };
+
   const allerA = (i: number) => {
     if (i < 0 || i >= niveaux.length) return;
     setIndex(i);
@@ -238,7 +264,7 @@ export default function Jeu({ niveaux, chapitres, base }: Props) {
     const frame = e.currentTarget as HTMLIFrameElement;
     const doc = frame.contentDocument;
     if (!doc) return;
-    styler(doc, niveau.chapitre !== 'bibliotheque');
+    styler(doc, niveau.page);
     figer(doc);
     setBalisage(arbre(doc));
     doc.addEventListener('mouseover', (ev) => {
@@ -293,10 +319,15 @@ export default function Jeu({ niveaux, chapitres, base }: Props) {
         <h2 class="jeu__consigne">{niveau.consigne}</h2>
         {mode !== progression.mode && <p class="jeu__note">{raisonDuRepli(niveau, progression.mode, mode)}</p>}
 
-        <div class="jeu__scene">
-          <p class="jeu__survol" aria-hidden="true">
-            {elementSurvole ? `<${elementSurvole.balise}${elementSurvole.attributs.map(([k, v]) => ` ${k}="${v}"`).join('')}>` : ' '}
-          </p>
+        <div class="jeu__scene fenetre">
+          <div class="fenetre__barre">
+            <span class="fenetre__points" aria-hidden="true" />
+            <p class="jeu__survol" aria-hidden="true">
+              {elementSurvole
+                ? `<${elementSurvole.balise}${elementSurvole.attributs.map(([k, v]) => ` ${k}="${v}"`).join('')}>`
+                : 'Survolez la Scène pour lire le code d\'un élément'}
+            </p>
+          </div>
           <iframe ref={iframe} title={`Scène du Niveau ${index + 1}`} class="jeu__iframe" srcdoc={srcdoc} onLoad={auChargement} />
         </div>
 
@@ -362,11 +393,20 @@ export default function Jeu({ niveaux, chapitres, base }: Props) {
                 <strong>Indice {i + 1}</strong> : <span dangerouslySetInnerHTML={{ __html: html }} />
               </p>
             ))}
-            {indicesVus < niveau.indices.length && (
-              <button type="button" class="bouton bouton--secondaire" onClick={() => setIndicesVus((n) => n + 1)}>
-                {indicesVus === 0 ? 'Afficher un indice' : 'Indice suivant'} ({indicesVus + 1}/{niveau.indices.length})
-              </button>
-            )}
+            <div class="jeu__boutons-indices">
+              {indicesVus < niveau.indices.length && (
+                <button type="button" class="bouton bouton--secondaire" onClick={() => setIndicesVus((n) => n + 1)}>
+                  {indicesVus === 0 ? 'Afficher un indice' : 'Indice suivant'} ({indicesVus + 1}/{niveau.indices.length})
+                </button>
+              )}
+              <IndicePersonnalise
+                key={`${niveau.id}:${mode}`}
+                disponible={reponse.trim() !== ''}
+                contexte={contexteIndice}
+                solutions={Object.values(niveau.solutions)}
+                onRepli={() => setIndicesVus((n) => Math.min(n + 1, niveau.indices.length))}
+              />
+            </div>
           </div>
         )}
 

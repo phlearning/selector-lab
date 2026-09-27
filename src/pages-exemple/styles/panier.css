@@ -1,0 +1,210 @@
+/* Page d'exemple « Panier » : une boutique en ligne. */
+body {
+  padding: 0;
+}
+
+.entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  background: var(--carte);
+  border-bottom: 1px solid var(--trait);
+}
+
+.logo {
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: var(--encre);
+  text-decoration: none;
+}
+
+.entete ul {
+  display: flex;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entete a {
+  text-decoration: none;
+}
+
+.entete a[aria-current="page"] {
+  font-weight: 700;
+}
+
+.compteur {
+  display: inline-block;
+  min-width: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--marque);
+  color: #fff;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  grid-template-areas: "titre titre" "liste recap";
+  gap: 20px;
+  padding: 24px;
+  align-items: start;
+}
+
+main > h1 {
+  grid-area: titre;
+  margin: 0;
+}
+
+.panier {
+  grid-area: liste;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.article {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px;
+  background: var(--carte);
+  border: 1px solid var(--trait);
+  border-radius: var(--rayon);
+}
+
+.article__infos {
+  flex: 1;
+}
+
+.article__titre {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.article__prix {
+  margin: 2px 0 6px;
+  font-weight: 700;
+}
+
+.article__prix del {
+  margin-left: 6px;
+  font-weight: 400;
+  color: var(--encre-douce);
+}
+
+.promo {
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 6px;
+  background: #fee2e2;
+  color: var(--danger);
+  font-size: 0.78rem;
+}
+
+.article label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+}
+
+.article input[type="number"] {
+  width: 70px;
+}
+
+.article--promo {
+  border-color: #fca5a5;
+}
+
+.article--indisponible {
+  opacity: 0.6;
+  background: var(--fond);
+}
+
+.article__stock {
+  margin: 0 0 6px;
+  color: var(--danger);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.recapitulatif {
+  grid-area: recap;
+  padding: 18px;
+  background: var(--carte);
+  border: 1px solid var(--trait);
+  border-radius: var(--rayon);
+}
+
+.recapitulatif h2 {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+}
+
+.recapitulatif dl {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 10px;
+  margin: 0 0 14px;
+}
+
+.recapitulatif dt {
+  color: var(--encre-douce);
+}
+
+.recapitulatif dd {
+  margin: 0;
+  text-align: right;
+}
+
+.code-promo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.code-promo label {
+  width: 100%;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.code-promo input {
+  flex: 1;
+  min-width: 0;
+}
+
+#commander {
+  width: 100%;
+  padding: 10px;
+}
+
+.pied {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 24px;
+  border-top: 1px solid var(--trait);
+  color: var(--encre-douce);
+  font-size: 0.85rem;
+}
+
+.pied p {
+  margin: 0;
+}
+
+/* Aperçus étroits : récapitulatif sous la liste des articles. */
+@media (max-width: 700px) {
+  main {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "titre" "liste" "recap";
+  }
+}

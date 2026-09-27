@@ -1,7 +1,9 @@
 ---
 import Base from '../../layouts/Base.astro';
+import '../../styles/pages-exemple.css';
 import { documentHtml, pagesExemple, type PageExemple } from '../../lib/pagesExemple';
 import { lienTesteur } from '../../lib/partage';
+import { cssDePage } from '../../lib/stylesPagesExemple';
 import { url } from '../../lib/url';
 
 export function getStaticPaths() {
@@ -9,6 +11,8 @@ export function getStaticPaths() {
 }
 
 const { page } = Astro.props as { page: PageExemple };
+// Affichage seulement : ce document n'est jamais évalué, on peut donc y insérer une balise <style>.
+const rendu = documentHtml(page).replace('</head>', `<style>${cssDePage(page.id)}</style></head>`);
 ---
 
 <Base title={page.titre}>
@@ -18,7 +22,7 @@ const { page } = Astro.props as { page: PageExemple };
   <div class="page-exemple">
     <section>
       <h2>Rendu</h2>
-      <iframe class="page-exemple__rendu" title={`Rendu : ${page.titre}`} sandbox="" srcdoc={documentHtml(page)}></iframe>
+      <iframe class="page-exemple__rendu" title={`Rendu : ${page.titre}`} sandbox="" srcdoc={rendu}></iframe>
     </section>
     <section>
       <h2>Code HTML</h2>

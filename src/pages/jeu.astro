@@ -3,6 +3,8 @@ import { getCollection } from 'astro:content';
 import Jeu from '../components/jeu/Jeu';
 import source from '../content/niveaux.yaml?raw';
 import Base from '../layouts/Base.astro';
+import '../styles/assistant.css';
+import '../styles/jeu.css';
 import { envelopper } from '../lib/document';
 import { md, mdInline } from '../lib/markdown';
 import { documentHtml, pageExemple } from '../lib/pagesExemple';
@@ -26,6 +28,7 @@ const niveaux = (await getCollection('niveaux'))
     consigne: data.consigne,
     // Même document que celui des vérifications en CI.
     html: data.page ? documentHtml(pageExemple(data.page)) : envelopper(data.scene ?? '', 'Niveau'),
+    page: data.page,
     solutions: data.solutions,
     recommande: data.recommande,
     indices: data.indices.map(mdInline),

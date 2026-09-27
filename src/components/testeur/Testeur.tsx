@@ -3,6 +3,8 @@ import { analyserCss, type Fonctionnalite } from '../../lib/analyse';
 import { diagnostiquer, type Diagnostic } from '../../lib/diagnostic';
 import { decoder, encoder, TAILLE_MAX_HTML_LIEN, type EtatTesteur } from '../../lib/partage';
 import { etiquette, evaluer, type Langage, type ResultatType } from '../../lib/resultat';
+import { stylerPageExemple } from '../../lib/stylesPagesExemple';
+import { PanneauTesteur } from '../assistant/PanneauTesteur';
 import { Analyse } from './Analyse';
 import { documentCible, marquer, nettoyer, restaurer, selectionner } from './iframe';
 
@@ -119,6 +121,18 @@ export default function Testeur({ pages, base, liensReference }: Props) {
     }, 300);
     return () => clearTimeout(minuteur);
   }, [langage, selecteur, page, html]);
+
+  /** Évaluation sur le document propre (sans marquage), pour la Validation des sélecteurs de l'Assistant. */
+  const evaluerSurPage = (l: Langage, s: string): ResultatType => {
+    const doc = iframe.current?.contentDocument;
+    if (!doc) return { type: 'erreur', message: 'Document cible indisponible' };
+    nettoyer(doc);
+    try {
+      return evaluer(doc, l, s);
+    } finally {
+      marquer(doc, noeuds.current);
+    }
+  };
 
   const choisirNoeud = (index: number) => {
     const doc = iframe.current?.contentDocument;
@@ -246,23 +260,44 @@ export default function Testeur({ pages, base, liensReference }: Props) {
         {evaluation?.analyse && evaluation.analyse.length > 0 && (
           <Analyse fonctionnalites={evaluation.analyse} base={base} liensReference={liensReference} />
         )}
+
+        <PanneauTesteur
+          langage={langage}
+          selecteur={selecteur}
+          document={() => iframe.current?.contentDocument ?? null}
+          evaluerSurPage={evaluerSurPage}
+          onUtiliser={(l, s) => {
+            setLangage(l);
+            setSelecteur(s);
+            setDomAutorise(true);
+          }}
+        />
       </div>
 
       <div class="testeur__apercu">
-        <iframe
-          ref={iframe}
-          title="Aperçu du Document cible"
-          class="testeur__iframe"
-          // allow-same-origin sans allow-scripts : le Testeur peut lire le DOM, mais aucun script du document ne s'exécute.
-          sandbox="allow-same-origin"
-          srcdoc={srcdoc}
-          onLoad={(e) => {
-            modifie.current = false;
-            // Un clic dans l'aperçu ne doit pas faire naviguer l'iframe hors du Document cible.
-            (e.currentTarget as HTMLIFrameElement).contentDocument?.addEventListener('click', (ev) => ev.preventDefault());
-            setDocCharge((e.currentTarget as HTMLIFrameElement).getAttribute('srcdoc'));
-          }}
-        />
+        <div class="fenetre">
+          <div class="fenetre__barre" aria-hidden="true">
+            <span class="fenetre__points" />
+            <span class="fenetre__titre">{page ? pages.find((p) => p.id === page)?.titre : 'Mon HTML'}</span>
+          </div>
+          <iframe
+            ref={iframe}
+            title="Aperçu du Document cible"
+            class="testeur__iframe"
+            // allow-same-origin sans allow-scripts : le Testeur peut lire le DOM, mais aucun script du document ne s'exécute.
+            sandbox="allow-same-origin"
+            srcdoc={srcdoc}
+            onLoad={(e) => {
+              modifie.current = false;
+              const docCible = (e.currentTarget as HTMLIFrameElement).contentDocument;
+              // Style des Pages d'exemple, sans toucher au DOM (le HTML collé reste tel quel).
+              if (docCible && page) stylerPageExemple(docCible, page);
+              // Un clic dans l'aperçu ne doit pas faire naviguer l'iframe hors du Document cible.
+              (e.currentTarget as HTMLIFrameElement).contentDocument?.addEventListener('click', (ev) => ev.preventDefault());
+              setDocCharge((e.currentTarget as HTMLIFrameElement).getAttribute('srcdoc'));
+            }}
+          />
+        </div>
       </div>
     </div>
   );

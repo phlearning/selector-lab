@@ -1,0 +1,115 @@
+/* Assistant : activation, Actions, sorties et Indice personnalisé (Testeur et Jeu). */
+
+.assistant {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.assistant h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.assistant h3 {
+  margin: 0.25rem 0;
+  font-size: 1rem;
+}
+
+.assistant p {
+  margin: 0.25rem 0;
+}
+
+.assistant__note,
+.assistant__statut {
+  color: var(--fg-muted);
+  font-size: 0.875rem;
+}
+
+.assistant__erreur {
+  color: var(--ko);
+}
+
+.assistant__valide {
+  color: var(--ok);
+}
+
+.assistant__choix,
+.assistant__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.assistant__choix .bouton {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.assistant__choix small {
+  font-weight: normal;
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+
+.assistant__chargement progress {
+  width: 100%;
+}
+
+.assistant__formulaire {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+}
+
+.assistant__ligne {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.assistant__ligne input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+}
+
+.assistant__sortie:empty {
+  display: none;
+}
+
+.assistant__selecteur {
+  overflow-wrap: anywhere;
+}
+
+.assistant button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.assistant--compact {
+  font-size: 0.9rem;
+}
+
+.jeu__boutons-indices {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.indice-ia {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}

@@ -5,7 +5,7 @@ Site statique pour apprendre, chercher et tester les sélecteurs utilisés en te
 - **Référence** : CSS, XPath 1.0, API DOM et Requêtes ARIA : chaque fonctionnalité, ses exemples, ses pièges et son support navigateur.
 - **Testeur** : évaluer un sélecteur sur une page d'exemple ou sur son propre HTML.
 - **Jeu** : progresser niveau par niveau dans une bibliothèque (CSS ou XPath), puis dans trois Scénarios e2e sur de vraies interfaces (CSS, XPath ou ARIA).
-- **Assistant** : un petit modèle de langage exécuté dans le navigateur, chargé à la demande (voir [ADR 0001](docs/adr/0001-assistant-local-a-la-demande.md)).
+- **Assistant** : un petit modèle de langage exécuté dans le navigateur, chargé à la demande (voir [ADR 0001](docs/adr/0001-assistant-local-a-la-demande.md)). Il utilise l'IA intégrée de Chrome (Gemini Nano) si elle est disponible, sinon WebLLM sur WebGPU (Qwen2.5-Coder 0.5B, 290 Mo, ou 1.5B, 880 Mo). Dans le Testeur, il explique un sélecteur, juge sa robustesse, le convertit, en génère un depuis une description ou répond à une question ; dans le Jeu, il donne des Indices personnalisés. Chaque sélecteur qu'il propose est vérifié par le navigateur avant d'être affiché.
 
 Le vocabulaire du projet est défini dans [CONTEXT.md](CONTEXT.md).
 
@@ -47,6 +47,21 @@ que les solutions CSS et XPath d'un même Niveau renvoient exactement les mêmes
 `npm run verifier-contenu` signale les erreurs de syntaxe YAML et les pièges connus (un `#` sans guillemets
 est lu comme un commentaire). Le Support navigateur vient de `@mdn/browser-compat-data` et `web-features`,
 mis à jour avec les dépendances.
+
+## Styles
+
+`src/styles/` contient un fichier par partie du site (`global.css` pour la base et les composants partagés,
+puis `accueil.css`, `reference.css`, `testeur.css`, `jeu.css`, `assistant.css`, `pages-exemple.css`).
+
+Les Pages d'exemple ont leurs propres styles dans `src/pages-exemple/styles/` (`commun.css` plus un fichier par
+page). Ils sont appliqués par `adoptedStyleSheets`, sans jamais modifier le DOM, et ne doivent ni masquer
+d'élément ni générer de texte : `npm run verifier-contenu` le contrôle.
+
+## Assistant en test
+
+Aucun modèle ne tourne en CI. Les tests injectent un moteur simulé (`window.__selectorLabMoteurTest`) pour
+vérifier l'interface, la Validation des sélecteurs proposés et le filtrage des Indices qui dévoileraient la
+solution.
 
 ## Déploiement
 

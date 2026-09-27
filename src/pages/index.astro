@@ -1,26 +1,64 @@
 ---
 import Base from '../layouts/Base.astro';
 import { url } from '../lib/url';
+import '../styles/accueil.css';
+
+const parties = [
+  {
+    href: url('reference/'),
+    titre: 'Référence',
+    texte: "Chaque fonctionnalité de CSS, XPath 1.0, l'API DOM et des requêtes ARIA : syntaxe, exemples vérifiés, pièges et support navigateur.",
+    exemple: "//tr[td='Paris']//button",
+    action: 'Consulter',
+  },
+  {
+    href: url('testeur/'),
+    titre: 'Testeur',
+    texte: "Évaluez un sélecteur sur une page d'exemple ou sur votre propre HTML, et voyez exactement ce qu'il trouve.",
+    exemple: 'tr:has(.badge--suspendu)',
+    action: 'Tester',
+  },
+  {
+    href: url('jeu/'),
+    titre: 'Jeu',
+    texte: "43 niveaux : une bibliothèque en CSS ou en XPath, puis trois scénarios e2e sur de vraies interfaces, en ARIA aussi.",
+    exemple: "getByRole('button', { name: 'Supprimer' })",
+    action: 'Jouer',
+  },
+];
 ---
 
 <Base title="Selector Lab">
-  <h1>Selector Lab</h1>
-  <p>
-    Apprendre, chercher et tester les sélecteurs utilisés en tests end-to-end : CSS, XPath 1.0, API DOM et
-    requêtes ARIA, avec leur support dans chaque navigateur.
-  </p>
-  <div class="cards">
-    <a class="card" href={url('reference/')}>
-      <h2>Référence</h2>
-      <p>Chaque fonctionnalité, ses exemples, ses pièges et son support navigateur.</p>
-    </a>
-    <a class="card" href={url('testeur/')}>
-      <h2>Testeur</h2>
-      <p>Évaluer un sélecteur sur une page d'exemple ou sur votre propre HTML.</p>
-    </a>
-    <a class="card" href={url('jeu/')}>
-      <h2>Jeu</h2>
-      <p>Progresser niveau par niveau, en CSS ou en XPath.</p>
-    </a>
+  <section class="accueil">
+    <p class="accueil__surtitre">Sélecteurs pour les tests end-to-end</p>
+    <h1 class="accueil__titre">Selector Lab</h1>
+    <p class="accueil__intro">
+      Apprendre, chercher et tester les sélecteurs CSS, XPath 1.0, API DOM et les requêtes ARIA, avec leur support dans
+      chaque navigateur. Chaque exemple du site est réévalué automatiquement dans Chromium, Firefox et WebKit.
+    </p>
+    <div class="accueil__actions">
+      <a class="bouton" href={url('jeu/')}>Commencer par le Jeu</a>
+      <a class="bouton bouton--secondaire" href={url('reference/')}>Ouvrir la Référence</a>
+    </div>
+  </section>
+
+  <div class="accueil__parties">
+    {parties.map((p) => (
+      <a class="partie" href={p.href}>
+        <h2>{p.titre}</h2>
+        <p>{p.texte}</p>
+        <code class="partie__exemple">{p.exemple}</code>
+        <span class="partie__action">{p.action} →</span>
+      </a>
+    ))}
   </div>
+
+  <section class="accueil__assistant">
+    <h2>Un Assistant qui reste dans votre navigateur</h2>
+    <p>
+      Dans le Testeur et le Jeu, un petit modèle de langage peut expliquer un sélecteur, juger sa robustesse, le
+      convertir ou donner un indice. Il tourne localement (IA intégrée de Chrome ou WebLLM), ne se charge qu'à la demande,
+      et chaque sélecteur qu'il propose est vérifié par votre navigateur avant d'être affiché.
+    </p>
+  </section>
 </Base>

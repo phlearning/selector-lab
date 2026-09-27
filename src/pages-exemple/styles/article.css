@@ -1,0 +1,110 @@
+/* Page d'exemple « Article de blog » : une mise en page éditoriale. */
+body {
+  display: grid;
+  grid-template-columns: minmax(0, 640px) 200px;
+  justify-content: center;
+  gap: 32px;
+  padding: 32px 24px;
+  background: #fffdf8;
+}
+
+article {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+article h1 {
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+article h2 {
+  margin: 1.8em 0 0.4em;
+  font-family: system-ui, sans-serif;
+  font-size: 1.2rem;
+}
+
+.meta {
+  margin-top: -10px;
+  color: var(--encre-douce);
+  font-family: system-ui, sans-serif;
+  font-size: 0.85rem;
+}
+
+.chapo {
+  font-size: 1.2rem;
+  font-style: italic;
+  color: #3b4252;
+}
+
+code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #f1efe7;
+  font-size: 0.88em;
+}
+
+blockquote {
+  margin: 1.2em 0;
+  padding: 4px 18px;
+  border-left: 4px solid var(--marque);
+  color: #3b4252;
+}
+
+article footer {
+  margin-top: 2em;
+  padding-top: 1em;
+  border-top: 1px solid var(--trait);
+  font-family: system-ui, sans-serif;
+  font-size: 0.85rem;
+}
+
+a[rel="tag"] {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #eef2ff;
+  text-decoration: none;
+}
+
+.sommaire {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  padding: 14px 16px;
+  border: 1px solid var(--trait);
+  border-radius: var(--rayon);
+  background: var(--carte);
+  font-size: 0.88rem;
+}
+
+.sommaire h2 {
+  margin: 0 0 6px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--encre-douce);
+}
+
+.sommaire ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.commentaires {
+  grid-column: 1 / -1;
+}
+
+/* Aperçus étroits (Testeur, Jeu, mobile) : une seule colonne, sommaire en tête. */
+@media (max-width: 760px) {
+  body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    padding: 20px 16px;
+  }
+
+  .sommaire {
+    position: static;
+    grid-row: 1;
+  }
+}
