@@ -212,8 +212,7 @@
 /* Panneaux de la colonne de saisie : des cartes, pour structurer une colonne dense. */
 .testeur__saisie > .testeur__langages,
 .testeur__saisie > .testeur__resultat,
-.testeur__saisie > .analyse,
-.testeur__saisie > .assistant {
+.testeur__saisie > .analyse {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--bg-soft);

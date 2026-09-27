@@ -5,6 +5,6 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "preact",
-    "types": ["node", "dom-chromium-ai"]
+    "types": ["node"]
   }
 }

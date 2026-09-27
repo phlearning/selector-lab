@@ -308,16 +308,6 @@ main.container {
   background: var(--ok-bg);
 }
 
-.lien-bouton {
-  font: inherit;
-  font-size: 0.9rem;
-  color: var(--accent);
-  background: none;
-  border: 0;
-  padding: 0;
-  text-decoration: underline;
-  cursor: pointer;
-}
 
 /* Cadre de fenêtre autour des aperçus (Testeur, Jeu). */
 .fenetre {

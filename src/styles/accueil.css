@@ -82,24 +82,8 @@
   font-weight: 600;
 }
 
-.accueil__assistant {
-  margin-top: 2.5rem;
-  padding: 1.25rem 1.5rem;
-  border-left: 4px solid var(--accent);
-  background: var(--bg-soft);
-  border-radius: 0 var(--radius) var(--radius) 0;
-  max-width: 50rem;
-}
 
-.accueil__assistant h2 {
-  margin: 0 0 0.4rem;
-  font-size: 1.1rem;
-}
 
-.accueil__assistant p {
-  margin: 0;
-  color: var(--fg-muted);
-}
 
 @media (prefers-reduced-motion: reduce) {
   .partie {

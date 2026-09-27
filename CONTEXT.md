@@ -1,6 +1,6 @@
 # Selector Lab
 
-Site statique d'apprentissage et de référence des sélecteurs (CSS, XPath, API DOM, ARIA) pour les tests end-to-end, avec un outil de test, un jeu et un assistant IA exécuté dans le navigateur.
+Site statique d'apprentissage et de référence des sélecteurs (CSS, XPath, API DOM, ARIA) pour les tests end-to-end, avec un outil de test et un jeu.
 
 ## Langage
 
@@ -98,7 +98,7 @@ _Éviter_: corrigé, réponse
 
 **Réussite**:
 Un Niveau est réussi quand le Résultat typé du Sélecteur du joueur est identique au Résultat typé attendu (même ensemble de nœuds, ou même type et même valeur).
-_Éviter_: validation (réservé à l'Assistant)
+_Éviter_: validation
 
 **Mode**:
 Le Langage de sélection choisi par le joueur pour résoudre les Niveaux : CSS ou XPath, plus ARIA dans les Scénarios e2e uniquement.
@@ -108,24 +108,8 @@ _Éviter_: langue, option
 Un chapitre avancé du Jeu : une suite de Niveaux posés sur une Page d'exemple, dont les consignes imitent des besoins de test réels.
 _Éviter_: mission, cas d'usage
 
-### Assistant IA
-
-**Assistant**:
-Le modèle de langage exécuté localement dans le navigateur, qui explique, critique, génère ou convertit des Sélecteurs et donne des Indices.
-_Éviter_: chatbot, IA, bot
-
-**Action**:
-Une tâche cadrée que l'on demande à l'Assistant sur un Sélecteur et un Document cible : expliquer, évaluer la robustesse, convertir, générer, ou donner un Indice personnalisé.
-_Éviter_: prompt, commande
+### Indices
 
 **Indice**:
 Une aide écrite à la main, attachée à un Niveau, qui oriente sans révéler la solution ; les Indices d'un Niveau sont progressifs.
 _Éviter_: hint, solution
-
-**Indice personnalisé**:
-Un Indice produit par l'Assistant à partir de la dernière tentative du joueur ; complément optionnel des Indices.
-_Éviter_: hint IA
-
-**Validation**:
-La vérification, par le vrai moteur du navigateur, qu'un Sélecteur produit par l'Assistant est syntaxiquement valide et cible bien les éléments voulus, avant son affichage.
-_Éviter_: check, test

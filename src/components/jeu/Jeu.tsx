@@ -2,10 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { envelopper } from '../../lib/document';
 import { diagnostiquer } from '../../lib/diagnostic';
 import { avecReussite, charger, enregistrer, estReussi, progressionVide, type Mode, type Progression } from '../../lib/progression';
-import type { ContexteIndice } from '../../lib/assistant/actions';
-import { extraitHtml } from '../../lib/assistant/actions';
-import { etiquette, evaluer, memeResultat, type ResultatType } from '../../lib/resultat';
-import { IndicePersonnalise } from '../assistant/IndicePersonnalise';
+import { evaluer, memeResultat, type ResultatType } from '../../lib/resultat';
 import { arbre, Balisage, type NoeudBalisage } from './Balisage';
 import { elementsDeScene, figer, marquer, retirerMarques, styler } from './scene';
 
@@ -223,27 +220,6 @@ export default function Jeu({ niveaux, chapitres, base }: Props) {
     champ.current?.classList.add('secoue');
   };
 
-  /** Contexte de l'Indice personnalisé : la tentative et ses écarts, jamais la Solution de référence. */
-  const contexteIndice = (): ContexteIndice | null => {
-    if (!reponse.trim() || retour.type === 'reussite') return null;
-    const r = actualiser();
-    const doc = iframe.current?.contentDocument;
-    if (!r || !r.joueur || !doc) return null;
-    const attendus = r.cibles.type === 'noeuds' ? r.cibles.noeuds : [];
-    const trouves = r.joueur.type === 'noeuds' ? r.joueur.noeuds : [];
-    return {
-      consigne: niveau.consigne,
-      langage: mode,
-      reponse,
-      html: extraitHtml(doc),
-      attendus: attendus.map(etiquette),
-      enTrop: trouves.filter((n) => !attendus.includes(n)).map(etiquette),
-      manquants: attendus.filter((n) => !trouves.includes(n)).map(etiquette),
-      typeAttendu: TYPE_ATTENDU[r.cibles.type],
-      typeObtenu: r.joueur.type === 'erreur' ? `une erreur (${r.joueur.message})` : decrire(r.joueur),
-    };
-  };
-
   const allerA = (i: number) => {
     if (i < 0 || i >= niveaux.length) return;
     setIndex(i);
@@ -393,20 +369,11 @@ export default function Jeu({ niveaux, chapitres, base }: Props) {
                 <strong>Indice {i + 1}</strong> : <span dangerouslySetInnerHTML={{ __html: html }} />
               </p>
             ))}
-            <div class="jeu__boutons-indices">
-              {indicesVus < niveau.indices.length && (
-                <button type="button" class="bouton bouton--secondaire" onClick={() => setIndicesVus((n) => n + 1)}>
-                  {indicesVus === 0 ? 'Afficher un indice' : 'Indice suivant'} ({indicesVus + 1}/{niveau.indices.length})
-                </button>
-              )}
-              <IndicePersonnalise
-                key={`${niveau.id}:${mode}`}
-                disponible={reponse.trim() !== ''}
-                contexte={contexteIndice}
-                solutions={Object.values(niveau.solutions)}
-                onRepli={() => setIndicesVus((n) => Math.min(n + 1, niveau.indices.length))}
-              />
-            </div>
+            {indicesVus < niveau.indices.length && (
+              <button type="button" class="bouton bouton--secondaire" onClick={() => setIndicesVus((n) => n + 1)}>
+                {indicesVus === 0 ? 'Afficher un indice' : 'Indice suivant'} ({indicesVus + 1}/{niveau.indices.length})
+              </button>
+            )}
           </div>
         )}
 

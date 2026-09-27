@@ -1,8 +1,13 @@
 ---
-status: accepted
+status: deprecated
 ---
 
 # Assistant local, chargé à la demande, avec Validation obligatoire
+
+> **Abandonné.** L'Assistant a été implémenté puis retiré : l'IA intégrée de Chrome ne fonctionnait pas sur les
+> machines de test malgré un Chrome à jour, et WebGPU reste désactivé par défaut sous Linux. Le site garde sa
+> valeur sans lui (Référence, Testeur, Jeu). Le code se retrouve dans l'historique git (commits du jalon 6), si
+> l'idée revient quand ces moteurs seront plus répandus.
 
 Selector Lab est hébergé sur GitHub Pages, sans backend : l'Assistant ne peut donc ni appeler une API distante (clé exposée, coût), ni reposer sur un serveur d'inférence. Nous exécutons le modèle dans le navigateur, en essayant d'abord l'IA intégrée de Chrome (Prompt API, Gemini Nano : aucun téléchargement côté site) puis, à défaut, WebLLM sur WebGPU avec un petit modèle orienté code (famille Qwen2.5-Coder 0,5B à 1,5B, poids servis par le CDN de Hugging Face). Le chargement n'a lieu qu'après un clic explicite affichant la taille du téléchargement, et le reste du site fonctionne entièrement sans l'Assistant.
 
