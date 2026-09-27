@@ -1,0 +1,26 @@
+---
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/url';
+---
+
+<Base title="Selector Lab">
+  <h1>Selector Lab</h1>
+  <p>
+    Apprendre, chercher et tester les sélecteurs utilisés en tests end-to-end : CSS, XPath 1.0, API DOM et
+    requêtes ARIA, avec leur support dans chaque navigateur.
+  </p>
+  <div class="cards">
+    <a class="card" href={url('reference/')}>
+      <h2>Référence</h2>
+      <p>Chaque fonctionnalité, ses exemples, ses pièges et son support navigateur.</p>
+    </a>
+    <a class="card" href={url('testeur/')}>
+      <h2>Testeur</h2>
+      <p>Évaluer un sélecteur sur une page d'exemple ou sur votre propre HTML.</p>
+    </a>
+    <a class="card" href={url('jeu/')}>
+      <h2>Jeu</h2>
+      <p>Progresser niveau par niveau, en CSS ou en XPath.</p>
+    </a>
+  </div>
+</Base>

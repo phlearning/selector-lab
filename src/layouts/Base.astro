@@ -1,0 +1,51 @@
+---
+import '../styles/global.css';
+import { url } from '../lib/url';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'Apprendre et tester les sélecteurs CSS, XPath, API DOM et ARIA pour les tests end-to-end.' } = Astro.props;
+
+const nav = [
+  { href: url('reference/'), label: 'Référence' },
+  { href: url('testeur/'), label: 'Testeur' },
+  { href: url('jeu/'), label: 'Jeu' },
+];
+const current = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href={url('favicon.svg')} />
+    <title>{title === 'Selector Lab' ? title : `${title} - Selector Lab`}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <a class="brand" href={url('')}>selector-lab</a>
+        <nav class="site-nav" aria-label="Navigation principale">
+          {nav.map((item) => (
+            <a href={item.href} aria-current={current.startsWith(item.href) ? 'page' : undefined}>
+              {item.label}
+            </a>
+          ))}
+        </nav>
+      </div>
+    </header>
+    <main class="container">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="container">
+        Code sous licence MIT, contenu sous licence CC BY-SA 4.0.
+      </div>
+    </footer>
+  </body>
+</html>
