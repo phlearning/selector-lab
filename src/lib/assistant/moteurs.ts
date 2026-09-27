@@ -32,9 +32,12 @@ export const MODELES: Record<ChoixModele, { id: string; nom: string; taille: str
 
 export type DisponibiliteChrome = 'available' | 'downloadable' | 'downloading' | 'unavailable' | 'absent';
 
+/** `absent` : pas d'API WebGPU ; `sans-adaptateur` : l'API existe mais aucune carte graphique utilisable. */
+export type DisponibiliteWebGPU = 'disponible' | 'sans-adaptateur' | 'absent';
+
 export interface Disponibilite {
   chrome: DisponibiliteChrome;
-  webgpu: boolean;
+  webgpu: DisponibiliteWebGPU;
 }
 
 /** Point d'injection des tests : un moteur simulé, pour vérifier l'interface sans modèle réel. */
@@ -48,19 +51,21 @@ const OPTIONS_LANGUES = {
 };
 
 export async function detecter(): Promise<Disponibilite> {
-  if (moteurDeTest()) return { chrome: 'available', webgpu: false };
+  if (moteurDeTest()) return { chrome: 'available', webgpu: 'absent' };
   let chrome: DisponibiliteChrome = 'absent';
   try {
     if ('LanguageModel' in globalThis) chrome = await LanguageModel.availability(OPTIONS_LANGUES);
   } catch {
     chrome = 'unavailable';
   }
-  let webgpu = false;
-  try {
-    const gpu = (navigator as Navigator & { gpu?: { requestAdapter(): Promise<unknown> } }).gpu;
-    webgpu = !!gpu && !!(await gpu.requestAdapter());
-  } catch {
-    webgpu = false;
+  let webgpu: DisponibiliteWebGPU = 'absent';
+  const gpu = (navigator as Navigator & { gpu?: { requestAdapter(): Promise<unknown> } }).gpu;
+  if (gpu) {
+    try {
+      webgpu = (await gpu.requestAdapter()) ? 'disponible' : 'sans-adaptateur';
+    } catch {
+      webgpu = 'sans-adaptateur';
+    }
   }
   return { chrome, webgpu };
 }

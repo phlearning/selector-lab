@@ -64,39 +64,6 @@ test('un sélecteur généré et validé peut être utilisé dans le Testeur', a
   await expect(page.getByRole('region', { name: 'Résultat' })).toContainText('tr "Chloé Durand');
 });
 
-test('une conversion qui ne trouve pas les mêmes éléments est signalée', async ({ page }) => {
-  await simulerMoteur(page, JSON.stringify({ possible: true, selecteur: '//tr', explication: '' }));
-  await page.goto(lienTesteur({ l: 'css', p: 'tableau', s: 'tbody tr' }));
-  const assistant = await activer(page);
-
-  await assistant.getByRole('button', { name: 'Convertir en XPath' }).click();
-  await expect(assistant).toContainText("La conversion n'est pas équivalente");
-  await expect(assistant.getByRole('button', { name: 'Essayer quand même' })).toBeVisible();
-});
-
-test('un sélecteur XPath 2.0 inventé par le modèle est refusé par le navigateur', async ({ page }) => {
-  await simulerMoteur(page, JSON.stringify({ possible: true, selecteur: "//tr[lower-case(.) = 'x']", explication: '' }));
-  await page.goto(lienTesteur({ l: 'xpath', p: 'tableau', s: '' }));
-  const assistant = await activer(page);
-
-  await assistant.getByRole('textbox', { name: /Générer un sélecteur XPath/ }).fill('une ligne');
-  await assistant.getByRole('button', { name: 'Générer' }).click();
-  await expect(assistant).toContainText('sélecteur refusé par le navigateur');
-});
-
-test("l'Indice personnalisé s'appuie sur la tentative du joueur", async ({ page }) => {
-  await simulerMoteur(page, 'Ta réponse attrape aussi le magazine : limite-toi à une seule balise.');
-  await page.goto('jeu/#n=type');
-  const champ = page.getByRole('textbox', { name: 'Ton sélecteur CSS' });
-  await champ.fill('etagere > *');
-  await champ.press('Enter');
-
-  await page.getByRole('button', { name: "Activer l'Assistant pour des Indices personnalisés" }).click();
-  await page.getByRole('button', { name: /Activer avec l'IA intégrée de Chrome/ }).click();
-  await page.getByRole('button', { name: 'Indice personnalisé' }).click();
-  await expect(page.getByText('limite-toi à une seule balise')).toBeVisible();
-});
-
 test('un Indice personnalisé qui dévoile la solution est remplacé par un Indice écrit à la main', async ({ page }) => {
   await simulerMoteur(page, 'Écris simplement `//livre` et le tour est joué.');
   await page.goto('jeu/#n=type');

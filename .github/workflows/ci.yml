@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   test:
-    name: Build et tests (Chromium, Firefox, WebKit)
+    name: Build et tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

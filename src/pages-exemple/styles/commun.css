@@ -122,14 +122,13 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* Images absentes du site : un emplacement neutre plutôt qu'une icône cassée. */
+/* Vignettes des articles (couvertures dans public/img/), avec un fond pendant le chargement. */
 img {
   display: block;
-  width: 56px;
-  height: 72px;
+  width: 60px;
+  height: 80px;
   object-fit: cover;
   border-radius: 6px;
-  background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
-  color: transparent;
-  font-size: 0;
+  background: #e0e7ff;
+  box-shadow: 0 2px 6px rgb(31 36 48 / 0.18);
 }

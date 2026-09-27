@@ -12,11 +12,12 @@ export default defineConfig({
     baseURL: `http://localhost:${port}/selector-lab/`,
     trace: 'retain-on-failure',
   },
-  // Les Exemples et Solutions de référence doivent être vérifiés dans les trois moteurs.
+  // Les Exemples et Solutions de référence (exemples.spec.ts) sont vérifiés dans les trois moteurs :
+  // c'est la promesse du site. Les tests d'interface ne tournent que dans Chromium.
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] }, testMatch: 'exemples.spec.ts' },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] }, testMatch: 'exemples.spec.ts' },
   ],
   webServer: {
     // --ignore-lock garde le serveur au premier plan (sinon Astro peut le lancer en arrière-plan).

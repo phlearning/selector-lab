@@ -9,6 +9,50 @@ Site statique pour apprendre, chercher et tester les sélecteurs utilisés en te
 
 Le vocabulaire du projet est défini dans [CONTEXT.md](CONTEXT.md).
 
+## Aperçu
+
+| Accueil | Référence |
+| --- | --- |
+| ![Page d'accueil](docs/captures/accueil.png) | ![Référence : pseudo-classes logiques](docs/captures/reference.png) |
+
+| Testeur | Page d'exemple |
+| --- | --- |
+| ![Testeur : un sélecteur CSS évalué sur le tableau des utilisateurs](docs/captures/testeur.png) | ![Page d'exemple : le panier](docs/captures/page-exemple-panier.png) |
+
+| Jeu : la bibliothèque | Jeu : un Scénario e2e en ARIA |
+| --- | --- |
+| ![Jeu : un Niveau de la bibliothèque](docs/captures/jeu-bibliotheque.png) | ![Jeu : supprimer Chloé Durand avec une Requête ARIA](docs/captures/jeu-scenario.png) |
+
+<img src="docs/captures/assistant.png" alt="Assistant : un sélecteur ARIA généré puis vérifié par le navigateur" width="420">
+
+*Assistant : un sélecteur généré puis vérifié par le navigateur (réponse d'illustration).*
+
+Les captures se régénèrent avec `npm run build && npm run captures`.
+
+## Activer l'Assistant
+
+L'Assistant a besoin de l'un de ces deux moteurs. Le panneau « Diagnostic et comment activer l'Assistant », dans
+le Testeur, indique lequel manque et pourquoi.
+
+**IA intégrée de Chrome (Gemini Nano)**
+
+1. Chrome 138 ou plus récent sur ordinateur : Windows 10/11, macOS 13+, Linux ou Chromebook Plus.
+2. Au moins 22 Go libres sur le disque du profil Chrome, une carte graphique avec plus de 4 Go de mémoire (ou
+   16 Go de RAM et 4 cœurs), et une connexion non limitée pour le premier téléchargement.
+3. `chrome://on-device-internals` affiche l'état du modèle et les erreurs ; dans la console,
+   `await LanguageModel.availability()` renvoie `available`, `downloadable`, `downloading` ou `unavailable`.
+4. Si le modèle est à télécharger, le bouton « Activer » lance le téléchargement (plusieurs Go). Redémarrez Chrome
+   si l'état reste bloqué.
+
+**WebGPU (modèles WebLLM, 290 Mo ou 880 Mo)**
+
+1. Vérifiez votre navigateur sur [webgpureport.org](https://webgpureport.org).
+2. Chrome et Edge l'activent par défaut sur Windows, macOS et ChromeOS. Sous **Linux**, il est encore souvent
+   désactivé : dans `chrome://flags`, activez `#enable-unsafe-webgpu` et `#enable-vulkan`, puis redémarrez (des
+   pilotes Vulkan à jour sont nécessaires).
+3. Firefox l'active par défaut sur Windows et le déploie progressivement ailleurs (sinon `dom.webgpu.enabled`
+   dans `about:config`, selon les versions). Safari 26 et plus l'active par défaut.
+
 ## Développement
 
 Node 22.12 ou plus récent est requis (voir `.nvmrc`).
@@ -21,7 +65,8 @@ npm run dev
 
 ## Tests
 
-Les tests Playwright tournent sur Chromium, Firefox et WebKit, contre le site construit :
+Les tests Playwright tournent contre le site construit. La vérification des Exemples (`exemples.spec.ts`) tourne
+dans Chromium, Firefox et WebKit ; les tests d'interface, volontairement peu nombreux, dans Chromium seulement :
 
 ```bash
 npx playwright install chromium firefox webkit
@@ -65,7 +110,7 @@ solution.
 
 ## Déploiement
 
-Chaque push sur `main` lance le build, les tests dans les trois moteurs, puis le déploiement sur GitHub Pages si tout passe.
+Chaque push sur `main` lance le build et les tests, puis le déploiement sur GitHub Pages si tout passe.
 
 ## Licences
 
