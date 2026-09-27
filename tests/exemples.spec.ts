@@ -2,13 +2,14 @@ import { expect, test } from '@playwright/test';
 
 interface ExempleVerifie {
   cle: string;
-  page: string;
+  page: string | null;
+  html?: string;
   langage: 'css' | 'xpath' | 'dom';
   selecteur: string;
   attendu: unknown;
 }
 
-// Chaque Exemple de la Référence et chaque ligne de "CSS vs XPath" est réévalué par le vrai moteur
+// Chaque Exemple de la Référence, chaque ligne de "CSS vs XPath" et chaque Solution de référence du Jeu est réévalué par le vrai moteur
 // de chaque navigateur, et doit renvoyer exactement le Résultat typé affiché sur le site.
 test('chaque Exemple renvoie le Résultat typé attendu', async ({ page, request }) => {
   const exemples: ExempleVerifie[] = await (await request.get('exemples.json')).json();
@@ -20,10 +21,11 @@ test('chaque Exemple renvoie le Résultat typé attendu', async ({ page, request
   const obtenus = await page.evaluate(
     (liste) =>
       liste.map((e) =>
-        (window as unknown as { selectorLab: { verifier: (...a: string[]) => unknown } }).selectorLab.verifier(
+        (window as unknown as { selectorLab: { verifier: (...a: (string | null | undefined)[]) => unknown } }).selectorLab.verifier(
           e.page,
           e.langage,
           e.selecteur,
+          e.html,
         ),
       ),
     exemples,

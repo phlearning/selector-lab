@@ -1,0 +1,636 @@
+# Niveaux du Jeu. L'ordre du fichier est l'ordre de jeu.
+# `solutions.css: null` : Niveau réservé au Mode XPath. `attendu` est calculé par `npm run attendus`
+# et vérifié en CI dans les trois moteurs (les deux solutions doivent donner le même résultat).
+
+- id: type
+  chapitre: bibliotheque
+  titre: Tous les livres
+  notion: Sélecteur de type
+  consigne: Sélectionne tous les livres de l'étagère.
+  scene: |
+    <etagere>
+      <livre genre="sf">Dune</livre>
+      <magazine>Lire</magazine>
+      <livre genre="polar">Maigret</livre>
+      <livre genre="poesie">Alcools</livre>
+    </etagere>
+  solutions:
+    css: livre
+    xpath: //livre
+  indices:
+    - Le nom de la balise suffit.
+    - En CSS, écris simplement le nom de la balise. En XPath, `//` cherche partout dans le document.
+  lecon: |
+    Un **sélecteur de type** désigne tous les éléments d'une balise : `livre` en CSS, `//livre` en XPath.
+    Le magazine n'est pas un livre : il n'est pas sélectionné.
+  reference: reference/css/bases/#type
+  attendu: { noeuds: [ "livre \"Dune\"", "livre \"Maigret\"", "livre \"Alcools\"" ] }
+
+- id: id
+  chapitre: bibliotheque
+  titre: Le rayon science-fiction
+  notion: Identifiant
+  consigne: Sélectionne l'étagère du rayon science-fiction.
+  scene: |
+    <etagere id="rayon-polar">
+      <livre genre="polar">Maigret</livre>
+      <livre genre="polar">Arsène Lupin</livre>
+    </etagere>
+    <etagere id="rayon-sf">
+      <livre genre="sf">Dune</livre>
+      <livre genre="sf">Hypérion</livre>
+    </etagere>
+  solutions:
+    css: '#rayon-sf'
+    xpath: //etagere[@id='rayon-sf']
+  indices:
+    - >-
+      Regarde le code HTML : chaque étagère a un attribut `id`.
+    - En CSS, un `id` se sélectionne avec `#`. En XPath, un attribut se teste avec `@` dans un prédicat.
+  lecon: |
+    L'**identifiant** (`id`) est censé être unique dans la page : `#rayon-sf` en CSS,
+    `//*[@id='rayon-sf']` ou `id('rayon-sf')` en XPath.
+  reference: reference/css/bases/#id
+  attendu: { noeuds: [ "etagere#rayon-sf \"Dune Hypérion\"" ] }
+
+- id: descendant
+  chapitre: bibliotheque
+  titre: Tout le rayon
+  notion: Descendants
+  consigne: Sélectionne tous les livres du rayon science-fiction, y compris celui rangé dans la boîte.
+  scene: |
+    <etagere id="rayon-polar">
+      <livre genre="polar">Maigret</livre>
+      <livre genre="polar">Arsène Lupin</livre>
+    </etagere>
+    <etagere id="rayon-sf">
+      <livre genre="sf">Dune</livre>
+      <boite>
+        <livre genre="sf">Fondation</livre>
+      </boite>
+      <livre genre="sf">Hypérion</livre>
+    </etagere>
+  solutions:
+    css: '#rayon-sf livre'
+    xpath: //etagere[@id='rayon-sf']//livre
+  indices:
+    - Commence par sélectionner l'étagère, puis cherche les livres **à l'intérieur**.
+    - En CSS, un espace entre deux sélecteurs signifie « à l'intérieur de ». En XPath, c'est `//` au milieu du chemin.
+  lecon: |
+    `A B` en CSS et `A//B` en XPath désignent les `B` **descendants** de `A`, à n'importe quelle profondeur :
+    le livre de la boîte est trouvé aussi.
+  reference: reference/css/combinateurs/#descendant
+  attendu: { noeuds: [ "livre \"Dune\"", "livre \"Fondation\"", "livre \"Hypérion\"" ] }
+
+- id: classe
+  chapitre: bibliotheque
+  titre: Les livres anciens
+  notion: Classe
+  consigne: Sélectionne les livres anciens.
+  scene: |
+    <etagere>
+      <livre genre="poesie" class="ancien">Les Fleurs du mal</livre>
+      <livre genre="sf">Dune</livre>
+      <livre genre="polar" class="ancien">Arsène Lupin</livre>
+      <magazine>Lire</magazine>
+    </etagere>
+  solutions:
+    css: .ancien
+    xpath: //livre[@class='ancien']
+  indices:
+    - Les livres anciens ont tous la même valeur dans leur attribut `class`.
+    - >-
+      En CSS, une classe se sélectionne avec un point. XPath n'a pas de notion de classe : on teste l'attribut `@class`.
+  lecon: |
+    `.ancien` sélectionne les éléments dont l'attribut `class` contient le mot `ancien`. En XPath,
+    `//*[@class='ancien']` ne marche que si c'est la **seule** classe : voir la recette de la classe exacte.
+  reference: reference/css/bases/#classe
+  attendu: { noeuds: [ "livre \"Les Fleurs du mal\"", "livre \"Arsène Lupin\"" ] }
+
+- id: compose
+  chapitre: bibliotheque
+  titre: Les vieux magazines
+  notion: Sélecteur composé
+  consigne: Sélectionne les magazines anciens, et seulement eux.
+  scene: |
+    <etagere>
+      <livre genre="poesie" class="ancien">Alcools</livre>
+      <magazine class="ancien">L'Illustration</magazine>
+      <magazine>Pif Gadget</magazine>
+      <livre genre="bd">Astérix</livre>
+      <magazine class="ancien">Le Petit Journal</magazine>
+    </etagere>
+  solutions:
+    css: magazine.ancien
+    xpath: //magazine[@class='ancien']
+  indices:
+    - >-
+      Il faut combiner deux conditions : le type de l'élément et sa classe.
+    - En CSS, colle la balise et la classe sans espace. En XPath, ajoute un prédicat à `//magazine`.
+  lecon: |
+    Des sélecteurs **accolés sans espace** doivent tous être vrais pour le même élément :
+    `magazine.ancien`. Avec un espace (`magazine .ancien`), on chercherait un élément ancien *dans* un magazine.
+  reference: reference/css/bases/#compose
+  attendu: { noeuds: [ "magazine \"L'Illustration\"", "magazine \"Le Petit Journal\"" ] }
+
+- id: attribut-valeur
+  chapitre: bibliotheque
+  titre: Science-fiction
+  notion: Valeur d'attribut
+  consigne: Sélectionne les livres de science-fiction.
+  scene: |
+    <etagere>
+      <livre genre="sf">Dune</livre>
+      <livre genre="bd">Tintin</livre>
+      <livre genre="sf">Solaris</livre>
+      <livre genre="cuisine">Je sais cuisiner</livre>
+      <livre genre="sf">Ubik</livre>
+    </etagere>
+  solutions:
+    css: livre[genre="sf"]
+    xpath: //livre[@genre='sf']
+  indices:
+    - Le genre de chaque livre est indiqué dans un attribut.
+    - En CSS, `[attribut="valeur"]`. En XPath, `[@attribut='valeur']`.
+  lecon: |
+    Les attributs sont souvent plus stables que les classes : c'est pour ça que les tests e2e aiment
+    `[data-testid="..."]`. En CSS `livre[genre="sf"]`, en XPath `//livre[@genre='sf']`.
+  reference: reference/css/attributs/#egal
+  attendu: { noeuds: [ "livre \"Dune\"", "livre \"Solaris\"", "livre \"Ubik\"" ] }
+
+- id: attribut-present
+  chapitre: bibliotheque
+  titre: Datés
+  notion: Présence d'un attribut
+  consigne: Sélectionne tout ce qui porte une année de parution, livres comme magazines.
+  scene: |
+    <etagere>
+      <livre genre="polar" annee="1934">Le Crime de l'Orient-Express</livre>
+      <livre genre="bd">Gaston</livre>
+      <magazine annee="1968">Pilote</magazine>
+      <livre genre="sf" annee="1965">Dune</livre>
+      <magazine>Spirou</magazine>
+    </etagere>
+  solutions:
+    css: '[annee]'
+    xpath: //*[@annee]
+  indices:
+    - Peu importe la valeur de l'année, seule compte la présence de l'attribut.
+    - En CSS, `[attribut]` sans valeur. En XPath, `*` désigne n'importe quel élément.
+  lecon: |
+    `[annee]` et `//*[@annee]` retiennent les éléments qui **possèdent** l'attribut, quelle que soit sa valeur.
+  reference: reference/css/attributs/#present
+  attendu: { noeuds: [ "livre \"Le Crime de l'Orient-Express\"", "magazine \"Pilote\"", "livre \"Dune\"" ] }
+
+- id: attribut-debut
+  chapitre: bibliotheque
+  titre: Les années 1960
+  notion: Début d'une valeur
+  consigne: Sélectionne les livres parus dans les années 1960.
+  scene: |
+    <etagere>
+      <livre genre="sf" annee="1965">Dune</livre>
+      <livre genre="sf" annee="1951">Fondation</livre>
+      <livre genre="sf" annee="1969">Ubik</livre>
+      <livre genre="polar" annee="1961">Maigret et le Voleur</livre>
+      <livre genre="sf" annee="1989">Hypérion</livre>
+    </etagere>
+  solutions:
+    css: livre[annee^="196"]
+    xpath: //livre[starts-with(@annee, '196')]
+  indices:
+    - Toutes les années 1960 commencent par les mêmes trois chiffres.
+    - En CSS, l'opérateur `^=` teste le début d'une valeur. En XPath, il existe une fonction `starts-with()`.
+  lecon: |
+    `^=` (CSS) et `starts-with()` (XPath) testent le début d'une valeur. XPath sait aussi comparer des
+    nombres : `//livre[@annee >= 1960 and @annee < 1970]`.
+  reference: reference/css/attributs/#commence
+  attendu: { noeuds: [ "livre \"Dune\"", "livre \"Ubik\"", "livre \"Maigret et le Voleur\"" ] }
+
+- id: enfant
+  chapitre: bibliotheque
+  titre: Pas dans la boîte
+  notion: Enfants directs
+  consigne: Sélectionne les livres posés directement sur l'étagère, pas ceux rangés dans la boîte.
+  scene: |
+    <etagere>
+      <livre genre="bd">Astérix</livre>
+      <boite>
+        <livre genre="bd">Lucky Luke</livre>
+        <livre genre="bd">Blake et Mortimer</livre>
+      </boite>
+      <livre genre="bd">Tintin</livre>
+    </etagere>
+  solutions:
+    css: etagere > livre
+    xpath: //etagere/livre
+  indices:
+    - Les livres de la boîte sont des petits-enfants de l'étagère, pas des enfants.
+    - En CSS, le combinateur `>` limite aux enfants directs. En XPath, c'est un simple `/`.
+  lecon: |
+    `etagere > livre` (CSS) et `//etagere/livre` (XPath) ne descendent que d'**un** niveau.
+  reference: reference/css/combinateurs/#enfant
+  attendu: { noeuds: [ "livre \"Astérix\"", "livre \"Tintin\"" ] }
+
+- id: frere-adjacent
+  chapitre: bibliotheque
+  titre: À côté de la plante
+  notion: Frère adjacent
+  consigne: Sélectionne le livre posé juste après une plante.
+  scene: |
+    <etagere>
+      <livre genre="poesie">Alcools</livre>
+      <plante></plante>
+      <livre genre="sf">Dune</livre>
+      <livre genre="sf">Ubik</livre>
+      <plante></plante>
+      <magazine>Lire</magazine>
+      <livre genre="polar">Maigret</livre>
+    </etagere>
+  solutions:
+    css: plante + livre
+    xpath: //plante/following-sibling::*[1][self::livre]
+  indices:
+    - >-
+      Après la seconde plante vient un magazine, pas un livre : cette plante ne compte pas.
+    - En CSS, `A + B` désigne le `B` qui suit **immédiatement** `A`.
+    - En XPath, prends le premier frère suivant (`following-sibling::*[1]`) et vérifie que c'est un livre avec `[self::livre]`.
+  lecon: |
+    `plante + livre` exige que le livre soit le **tout premier** élément après la plante. En XPath,
+    `following-sibling::*[1][self::livre]` exprime la même chose.
+  reference: reference/css/combinateurs/#frere-adjacent
+  attendu: { noeuds: [ "livre \"Dune\"" ] }
+
+- id: freres-suivants
+  chapitre: bibliotheque
+  titre: Après la plante
+  notion: Frères suivants
+  consigne: Sélectionne tous les livres rangés après la plante, sur la même étagère.
+  scene: |
+    <etagere>
+      <livre genre="cuisine">Je sais cuisiner</livre>
+      <plante></plante>
+      <livre genre="sf">Dune</livre>
+      <magazine>Lire</magazine>
+      <livre genre="polar">Maigret</livre>
+    </etagere>
+    <etagere>
+      <livre genre="bd">Tintin</livre>
+      <livre genre="bd">Gaston</livre>
+    </etagere>
+  solutions:
+    css: plante ~ livre
+    xpath: //plante/following-sibling::livre
+  indices:
+    - Il faut les frères **suivants** de la plante, qu'ils la suivent immédiatement ou non.
+    - En CSS, le combinateur `~`. En XPath, l'axe `following-sibling::`.
+  lecon: |
+    `plante ~ livre` et `//plante/following-sibling::livre` : tous les livres après la plante, avec le même parent.
+    Les livres de l'autre étagère ne sont pas des frères.
+  reference: reference/css/combinateurs/#freres-suivants
+  attendu: { noeuds: [ "livre \"Dune\"", "livre \"Maigret\"" ] }
+
+- id: premier-du-type
+  chapitre: bibliotheque
+  titre: En tête de rayon
+  notion: Premier de son type
+  consigne: Sélectionne le premier livre de chaque étagère.
+  scene: |
+    <etagere>
+      <plante></plante>
+      <livre genre="sf">Dune</livre>
+      <livre genre="sf">Ubik</livre>
+    </etagere>
+    <etagere>
+      <livre genre="polar">Maigret</livre>
+      <magazine>Lire</magazine>
+      <livre genre="polar">Arsène Lupin</livre>
+    </etagere>
+  solutions:
+    css: livre:first-of-type
+    xpath: //etagere/livre[1]
+  indices:
+    - Sur la première étagère, le premier élément est une plante, pas un livre.
+    - '`:first-child` ne regarde que le tout premier enfant. Il existe une variante qui ne compte que les éléments du même type.'
+    - En XPath, `[1]` après `livre` compte seulement parmi les livres.
+  lecon: |
+    `livre:first-child` ne trouverait que « Maigret ». `livre:first-of-type` compte parmi les livres uniquement,
+    comme `//etagere/livre[1]` en XPath.
+  reference: reference/css/structurelles/#first-of-type
+  attendu: { noeuds: [ "livre \"Dune\"", "livre \"Maigret\"" ] }
+
+- id: nth-child
+  chapitre: bibliotheque
+  titre: Le troisième
+  notion: Position
+  consigne: Sélectionne le troisième objet de chaque étagère, quel qu'il soit.
+  scene: |
+    <etagere>
+      <livre genre="sf">Dune</livre>
+      <livre genre="sf">Ubik</livre>
+      <livre genre="sf">Solaris</livre>
+      <livre genre="sf">Hypérion</livre>
+    </etagere>
+    <etagere>
+      <magazine>Lire</magazine>
+      <plante></plante>
+      <livre genre="bd">Tintin</livre>
+      <livre genre="bd">Gaston</livre>
+    </etagere>
+  solutions:
+    css: etagere > :nth-child(3)
+    xpath: //etagere/*[3]
+  indices:
+    - Le type d'objet n'a pas d'importance, seule sa position compte.
+    - En CSS, `:nth-child(n)` après `etagere > `. En XPath, un nombre entre crochets est une position.
+  lecon: |
+    `:nth-child(3)` et `*[3]` désignent le 3ᵉ enfant, en comptant à partir de 1. Pratique, mais fragile en
+    test e2e : il suffit d'ajouter un objet pour tout décaler.
+  reference: reference/css/structurelles/#nth-child
+  attendu: { noeuds: [ "livre \"Solaris\"", "livre \"Tintin\"" ] }
+
+- id: negation
+  chapitre: bibliotheque
+  titre: En bon état
+  notion: Négation
+  consigne: Sélectionne tous les livres qui ne sont pas abîmés.
+  scene: |
+    <etagere>
+      <livre genre="poesie">Alcools</livre>
+      <livre genre="sf" class="abime">Dune</livre>
+      <livre genre="polar">Maigret</livre>
+      <livre genre="bd" class="abime">Tintin</livre>
+      <livre genre="sf">Ubik</livre>
+    </etagere>
+  solutions:
+    css: livre:not(.abime)
+    xpath: //livre[not(@class='abime')]
+  indices:
+    - Les livres abîmés ont la classe `abime` ; il faut tous les autres.
+    - En CSS, la pseudo-classe `:not()`. En XPath, la **fonction** `not()` dans un prédicat.
+  lecon: |
+    `livre:not(.abime)` en CSS, `//livre[not(@class='abime')]` en XPath. En XPath, `not()` est une fonction :
+    `[!@class]` n'existe pas.
+  reference: reference/css/logiques/#not
+  attendu: { noeuds: [ "livre \"Alcools\"", "livre \"Maigret\"", "livre \"Ubik\"" ] }
+
+- id: has
+  chapitre: bibliotheque
+  titre: Marque-pages
+  notion: Contient un élément
+  consigne: Sélectionne les livres dans lesquels on a glissé un marque-page.
+  scene: |
+    <etagere>
+      <livre genre="sf">Dune<marque-page couleur="rouge"></marque-page></livre>
+      <livre genre="polar">Maigret</livre>
+      <livre genre="poesie">Alcools<marque-page couleur="vert"></marque-page></livre>
+      <livre genre="bd">Tintin</livre>
+    </etagere>
+  solutions:
+    css: livre:has(marque-page)
+    xpath: //livre[marque-page]
+  indices:
+    - Il ne faut pas sélectionner les marque-pages, mais les livres qui les **contiennent**.
+    - En CSS, la pseudo-classe `:has()`. En XPath, un chemin dans un prédicat est vrai s'il trouve au moins un nœud.
+  lecon: |
+    `livre:has(marque-page)` est l'un des rares moyens de « remonter » en CSS. En XPath, c'est naturel :
+    `//livre[marque-page]`.
+  reference: reference/css/logiques/#has
+  attendu: { noeuds: [ "livre \"Dune\"", "livre \"Alcools\"" ] }
+
+- id: vide
+  chapitre: bibliotheque
+  titre: Boîtes vides
+  notion: Élément vide
+  consigne: Sélectionne les boîtes vides.
+  scene: |
+    <etagere>
+      <boite>
+        <livre genre="bd">Tintin</livre>
+      </boite>
+      <boite></boite>
+      <boite>
+        <magazine>Spirou</magazine>
+      </boite>
+      <boite></boite>
+    </etagere>
+  solutions:
+    css: boite:empty
+    xpath: //boite[not(node())]
+  indices:
+    - Une boîte vide n'a aucun enfant, ni élément ni texte.
+    - En CSS, `:empty`. En XPath, `node()` désigne n'importe quel nœud enfant.
+  lecon: |
+    `:empty` n'accepte même pas un espace ou un retour à la ligne. En XPath, `//boite[not(node())]` est
+    l'équivalent exact, et `//boite[not(*)]` ignore le texte.
+  reference: reference/css/structurelles/#empty
+  attendu: { noeuds: [ "boite", "boite" ] }
+
+- id: texte-exact
+  chapitre: bibliotheque
+  titre: Fondation, et rien d'autre
+  notion: Texte exact
+  consigne: Sélectionne le livre intitulé exactement « Fondation ».
+  scene: |
+    <etagere>
+      <livre genre="sf">Dune</livre>
+      <livre genre="sf">Fondation</livre>
+      <livre genre="sf">Fondation et Empire</livre>
+      <livre genre="sf">Seconde Fondation</livre>
+    </etagere>
+  solutions:
+    css: null
+    xpath: //livre[.='Fondation']
+  indices:
+    - >-
+      CSS ne sait pas lire le texte d'un élément : place à XPath.
+    - En XPath, `.` dans un prédicat désigne le texte de l'élément courant.
+  lecon: |
+    `//livre[.='Fondation']` compare tout le texte du livre. C'est **le** grand avantage de XPath en test e2e :
+    trouver un élément par ce que l'utilisateur voit.
+  reference: reference/xpath/recettes/#texte-exact
+  attendu: { noeuds: [ "livre \"Fondation\"" ] }
+
+- id: texte-contient
+  chapitre: bibliotheque
+  titre: La nuit
+  notion: Texte partiel
+  consigne: Sélectionne les livres dont le titre contient le mot « Nuit ».
+  scene: |
+    <etagere>
+      <livre genre="poesie">Les Contemplations</livre>
+      <livre genre="polar">La Nuit du carrefour</livre>
+      <livre genre="sf">La Nuit des temps</livre>
+      <livre genre="bd">Le Temple du Soleil</livre>
+      <livre genre="polar">Nuit blanche</livre>
+    </etagere>
+  solutions:
+    css: null
+    xpath: //livre[contains(., 'Nuit')]
+  indices:
+    - Le titre doit contenir « Nuit », pas être égal à « Nuit ».
+    - La fonction XPath `contains(texte, morceau)` teste la présence d'une sous-chaîne. Attention à la majuscule.
+  lecon: |
+    `contains()` est sensible à la casse : « nuit » ne trouverait rien. Pour ignorer la casse en XPath 1.0,
+    il faut passer par `translate()`.
+  reference: reference/xpath/fonctions-chaines/#contains
+  attendu: { noeuds: [ "livre \"La Nuit du carrefour\"", "livre \"La Nuit des temps\"", "livre \"Nuit blanche\"" ] }
+
+- id: ancetre
+  chapitre: bibliotheque
+  titre: Où est Dune ?
+  notion: Ancêtres
+  consigne: Sélectionne l'étagère sur laquelle est rangé le livre « Dune ».
+  scene: |
+    <etagere id="rayon-polar">
+      <livre genre="polar">Maigret</livre>
+      <livre genre="polar">Arsène Lupin</livre>
+    </etagere>
+    <etagere id="rayon-sf">
+      <livre genre="sf">Ubik</livre>
+      <boite>
+        <livre genre="sf">Dune</livre>
+      </boite>
+    </etagere>
+  solutions:
+    css: null
+    xpath: //livre[.='Dune']/ancestor::etagere
+  indices:
+    - Trouve d'abord le livre par son titre, puis remonte.
+    - Le parent de « Dune » est la boîte, pas l'étagère. Il faut remonter plus haut.
+    - L'axe `ancestor::` parcourt tous les ancêtres.
+  lecon: |
+    `//livre[.='Dune']/ancestor::etagere` : on trouve un élément par son texte, puis on remonte vers son
+    conteneur. C'est le schéma de base pour « le bouton Supprimer de la ligne de Chloé ».
+  reference: reference/xpath/axes/#ancestor
+  attendu: { noeuds: [ "etagere#rayon-sf \"Ubik Dune\"" ] }
+
+- id: frere-precedent
+  chapitre: bibliotheque
+  titre: Juste avant
+  notion: Frère précédent
+  consigne: Sélectionne le livre rangé juste avant « Dune » (le magazine ne compte pas).
+  scene: |
+    <etagere>
+      <livre genre="sf">Solaris</livre>
+      <livre genre="sf">Ubik</livre>
+      <magazine>Lire</magazine>
+      <livre genre="sf">Dune</livre>
+      <livre genre="sf">Hypérion</livre>
+    </etagere>
+  solutions:
+    css: null
+    xpath: //livre[.='Dune']/preceding-sibling::livre[1]
+  indices:
+    - L'axe `preceding-sibling::` parcourt les frères **précédents**.
+    - Dans un axe qui recule, `[1]` désigne le plus **proche**, pas le premier de l'étagère.
+  lecon: |
+    `preceding-sibling::livre[1]` : les positions des axes « vers l'arrière » partent du nœud courant.
+    `[1]` est donc Ubik, le livre le plus proche.
+  reference: reference/xpath/axes/#preceding-sibling
+  attendu: { noeuds: [ "livre \"Ubik\"" ] }
+
+- id: suivant
+  chapitre: bibliotheque
+  titre: Et ensuite ?
+  notion: Nœuds suivants
+  consigne: Sélectionne le premier livre rangé après « Dune », même s'il est sur l'étagère suivante.
+  scene: |
+    <etagere>
+      <livre genre="sf">Ubik</livre>
+      <livre genre="sf">Dune</livre>
+    </etagere>
+    <etagere>
+      <magazine>Lire</magazine>
+      <livre genre="polar">Maigret</livre>
+      <livre genre="polar">Arsène Lupin</livre>
+    </etagere>
+  solutions:
+    css: null
+    xpath: //livre[.='Dune']/following::livre[1]
+  indices:
+    - >-
+      « Dune » n'a aucun frère après lui : `following-sibling::` ne trouvera rien.
+    - L'axe `following::` parcourt tout ce qui suit dans le document, pas seulement les frères.
+  lecon: |
+    `following::` et `preceding::` ignorent la hiérarchie : ils suivent l'ordre de lecture du document.
+  reference: reference/xpath/axes/#following
+  attendu: { noeuds: [ "livre \"Maigret\"" ] }
+
+- id: compter
+  chapitre: bibliotheque
+  titre: Combien ?
+  notion: Compter
+  consigne: Combien y a-t-il de livres de science-fiction ? La réponse attendue est un nombre.
+  scene: |
+    <etagere>
+      <livre genre="sf">Dune</livre>
+      <livre genre="polar">Maigret</livre>
+      <livre genre="sf">Ubik</livre>
+    </etagere>
+    <etagere>
+      <livre genre="sf">Solaris</livre>
+      <magazine>Galaxies</magazine>
+      <livre genre="bd">Tintin</livre>
+    </etagere>
+  solutions:
+    css: null
+    xpath: count(//livre[@genre='sf'])
+  indices:
+    - Une expression XPath peut renvoyer un nombre au lieu d'éléments.
+    - La fonction `count()` compte les nœuds d'un ensemble.
+  lecon: |
+    `count(...)` renvoie un **nombre**. En test, c'est pratique pour vérifier le nombre de lignes d'un
+    tableau. Écrire directement `3` ne compte pas : l'expression doit lire la Scène.
+  reference: reference/xpath/fonctions-noeuds/#count
+  attendu: { nombre: 3 }
+
+- id: lire-texte
+  chapitre: bibliotheque
+  titre: Le marque-page rouge
+  notion: Lire un texte
+  consigne: Quel est le titre du livre qui contient le marque-page rouge ? La réponse attendue est une chaîne.
+  scene: |
+    <etagere>
+      <livre genre="polar">Maigret</livre>
+      <livre genre="sf">Dune<marque-page couleur="rouge"></marque-page></livre>
+      <livre genre="poesie">Alcools<marque-page couleur="vert"></marque-page></livre>
+    </etagere>
+  solutions:
+    css: null
+    xpath: string(//marque-page[@couleur='rouge']/..)
+  indices:
+    - Trouve d'abord le marque-page rouge, puis son livre.
+    - '`..` désigne le parent, et la fonction `string()` renvoie le texte d''un nœud.'
+  lecon: |
+    `string(...)` transforme un nœud en **chaîne** : son texte. Si l'ensemble contient plusieurs nœuds,
+    seul le premier est utilisé.
+  reference: reference/xpath/fonctions-chaines/#string
+  attendu: { chaine: "Dune" }
+
+- id: somme
+  chapitre: bibliotheque
+  titre: Lecture du soir
+  notion: Additionner
+  consigne: Combien de pages au total pour les livres de la deuxième étagère (sans le magazine) ?
+  scene: |
+    <etagere>
+      <livre genre="sf" pages="412">Dune</livre>
+      <livre genre="sf" pages="255">Fondation</livre>
+    </etagere>
+    <etagere>
+      <livre genre="polar" pages="180">Maigret</livre>
+      <livre genre="polar" pages="320">Arsène Lupin</livre>
+      <magazine pages="60">Lire</magazine>
+    </etagere>
+  solutions:
+    css: null
+    xpath: sum(//etagere[2]/livre/@pages)
+  indices:
+    - Le nombre de pages est dans un attribut. Il faut additionner plusieurs valeurs.
+    - La fonction `sum()` additionne les valeurs d'un ensemble de nœuds, par exemple des attributs `@pages`.
+  lecon: |
+    `sum(//etagere[2]/livre/@pages)` : les attributs sont des nœuds, et `sum()` additionne leurs valeurs.
+    Bravo, tu as terminé la bibliothèque !
+  reference: reference/xpath/fonctions-booleennes/#sum
+  attendu: { nombre: 500 }

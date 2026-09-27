@@ -57,4 +57,20 @@ const comparaison = defineCollection({
   }),
 });
 
-export const collections = { reference, comparaison };
+const niveaux = defineCollection({
+  loader: file('./src/content/niveaux.yaml'),
+  schema: z.object({
+    chapitre: z.enum(['bibliotheque']),
+    titre: z.string(),
+    notion: z.string(),
+    consigne: z.string(),
+    scene: z.string(),
+    solutions: z.object({ css: z.string().nullable(), xpath: z.string() }),
+    indices: z.array(z.string()).min(1),
+    lecon: z.string(),
+    reference: z.string(),
+    attendu: attendu.optional(),
+  }),
+});
+
+export const collections = { reference, comparaison, niveaux };

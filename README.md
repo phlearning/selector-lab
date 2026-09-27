@@ -40,6 +40,10 @@ Chaque Exemple déclare son Résultat typé attendu (`attendu`). Pour ajouter un
 2. lancer `npm run build && npm run attendus` : le script évalue l'Exemple dans Chromium et écrit le résultat ;
 3. **relire** le résultat écrit, puis `npm test` vérifie qu'il est identique dans Firefox et WebKit.
 
+Les Niveaux du Jeu sont dans `src/content/niveaux.yaml` (l'ordre du fichier est l'ordre de jeu). Leurs
+Solutions de référence passent par le même circuit : `npm run attendus` calcule leur résultat, et la CI vérifie
+que les solutions CSS et XPath d'un même Niveau renvoient exactement les mêmes nœuds dans les trois moteurs.
+
 `npm run verifier-contenu` signale les erreurs de syntaxe YAML et les pièges connus (un `#` sans guillemets
 est lu comme un commentaire). Le Support navigateur vient de `@mdn/browser-compat-data` et `web-features`,
 mis à jour avec les dépendances.

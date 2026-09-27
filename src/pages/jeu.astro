@@ -1,8 +1,33 @@
 ---
+import { getCollection } from 'astro:content';
+import Jeu from '../components/jeu/Jeu';
+import source from '../content/niveaux.yaml?raw';
 import Base from '../layouts/Base.astro';
+import { md, mdInline } from '../lib/markdown';
+
+// Les collections ne gardent pas l'ordre du fichier, qui est l'ordre de jeu.
+const ordre = [...source.matchAll(/^- id: (\S+)/gm)].map((m) => m[1]);
+const niveaux = (await getCollection('niveaux'))
+  .sort((a, b) => ordre.indexOf(a.id) - ordre.indexOf(b.id))
+  .map(({ id, data }) => ({
+    id,
+    titre: data.titre,
+    notion: data.notion,
+    consigne: data.consigne,
+    scene: data.scene,
+    solutions: data.solutions,
+    indices: data.indices.map(mdInline),
+    lecon: md(data.lecon),
+    reference: data.reference,
+  }));
 ---
 
-<Base title="Jeu">
-  <h1>Jeu</h1>
-  <p class="notice">En construction : cette partie arrive au jalon 4.</p>
+<Base title="Jeu" description="Apprendre les sélecteurs CSS et XPath en jouant, Niveau par Niveau.">
+  <h1>Jeu : la bibliothèque</h1>
+  <p class="intro-testeur">
+    Écris le sélecteur qui désigne exactement les objets qui s'agitent sur les étagères. Chaque Niveau se joue en CSS
+    ou en XPath ; les derniers ne sont possibles qu'en XPath.
+  </p>
+  <Jeu client:only="preact" niveaux={niveaux} base={import.meta.env.BASE_URL} />
+  <noscript><p class="notice">Le Jeu a besoin de JavaScript.</p></noscript>
 </Base>

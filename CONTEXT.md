@@ -69,8 +69,24 @@ La partie interactive d'apprentissage, où chaque Niveau demande d'écrire un S�
 _Éviter_: diner, quiz, exercices
 
 **Niveau**:
-Une étape du Jeu, composée d'une scène, d'une consigne et d'une cible attendue ; certains Niveaux ne sont résolubles qu'en XPath.
+Une étape du Jeu, composée d'une Scène, d'une consigne, d'une Leçon et d'une Solution de référence ; certains Niveaux ne sont résolubles qu'en XPath.
 _Éviter_: exercice, challenge
+
+**Chapitre**:
+Un groupe de Niveaux partageant un univers : la bibliothèque, puis chaque Scénario e2e.
+_Éviter_: monde, section
+
+**Scène**:
+Le Document cible d'un Niveau : dans le Chapitre bibliothèque, des étagères, livres, magazines, boîtes et plantes représentés par des balises (`etagere`, `livre`...).
+_Éviter_: plateau, table, décor
+
+**Leçon**:
+L'explication courte de la notion travaillée par un Niveau, affichée une fois le Niveau réussi (pour ne pas dévoiler la solution) et reliée à l'Entrée de référence correspondante.
+_Éviter_: cours, tutoriel
+
+**Progression**:
+Les Niveaux réussis par le joueur dans chaque Mode, conservés dans son navigateur uniquement.
+_Éviter_: sauvegarde, score
 
 **Solution de référence**:
 Un Sélecteur caché du joueur qui prouve qu'un Niveau est résoluble ; il n'est jamais comparé textuellement à la réponse du joueur.

@@ -26,7 +26,7 @@ try {
   await page.goto(`${base}verification/`);
   await page.waitForSelector('body[data-pret="oui"]', { state: 'attached' });
   const obtenus = await page.evaluate(
-    (liste) => liste.map((e) => window.selectorLab.verifier(e.page, e.langage, e.selecteur)),
+    (liste) => liste.map((e) => window.selectorLab.verifier(e.page, e.langage, e.selecteur, e.html)),
     exemples,
   );
   await navigateur.close();
@@ -46,13 +46,15 @@ try {
     const [source, reste] = ex.cle.split('#');
     let yaml;
     let noeud;
-    if (source === 'comparaison') {
+    const fichiersPlats = { comparaison: 'src/content/comparaison.yaml', jeu: 'src/content/niveaux.yaml' };
+    if (source in fichiersPlats) {
       const [id, langage] = reste.split('/');
-      yaml = doc('src/content/comparaison.yaml');
+      yaml = doc(fichiersPlats[source]);
       const index = yaml.contents.items.findIndex((it) => it.get('id') === id);
       noeud = yaml.getIn([index]);
-      // Les deux colonnes partagent un seul attendu : on ne l'écrit qu'une fois, depuis CSS si possible.
-      if (langage === 'xpath' && noeud.get('css') && noeud.get('attendu')) return;
+      // Les deux langages partagent un seul attendu : on ne l'écrit qu'une fois, depuis CSS si possible.
+      const css = source === 'jeu' ? noeud.getIn(['solutions', 'css']) : noeud.get('css');
+      if (langage === 'xpath' && css && noeud.get('attendu')) return;
     } else {
       const [entreeId, numero] = reste.split('/');
       yaml = doc(`src/content/reference/${source}.yaml`);

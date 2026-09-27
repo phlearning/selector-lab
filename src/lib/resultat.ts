@@ -146,3 +146,26 @@ export function serialiser(resultat: ResultatType): Attendu {
       return { erreur: true };
   }
 }
+
+/**
+ * Réussite d'un Niveau : même type de résultat et, pour un ensemble de nœuds, exactement les mêmes nœuds
+ * (identité, pas seulement étiquette), dans le même ordre.
+ */
+export function memeResultat(a: ResultatType, b: ResultatType): boolean {
+  if (a.type !== b.type) return false;
+  switch (a.type) {
+    case 'noeuds': {
+      const autres = (b as typeof a).noeuds;
+      return a.noeuds.length === autres.length && a.noeuds.every((n, i) => n === autres[i]);
+    }
+    case 'nombre': {
+      const autre = (b as typeof a).valeur;
+      return a.valeur === autre || (Number.isNaN(a.valeur) && Number.isNaN(autre));
+    }
+    case 'chaine':
+    case 'booleen':
+      return a.valeur === (b as typeof a).valeur;
+    case 'erreur':
+      return false;
+  }
+}

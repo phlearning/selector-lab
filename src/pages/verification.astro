@@ -13,6 +13,7 @@
   <body>
     <p>Page technique utilisée par les tests automatisés.</p>
     <script>
+      import { envelopper } from '../lib/document';
       import { documentHtml, pageExemple } from '../lib/pagesExemple';
       import { evaluer, serialiser, type Langage } from '../lib/resultat';
 
@@ -29,7 +30,12 @@
       Object.assign(window, {
         selectorLab: {
           // Chaque évaluation part d'un document neuf : certains Exemples DOM modifient le document.
-          verifier(page: string, langage: Langage, selecteur: string) {
+          verifier(page: string | null, langage: Langage, selecteur: string, html?: string) {
+            // Scène d'un Niveau : document construit avec la même enveloppe que dans le Jeu.
+            if (page === null) {
+              const doc = new DOMParser().parseFromString(envelopper(html ?? '', 'Niveau'), 'text/html');
+              return serialiser(evaluer(doc, langage, selecteur));
+            }
             documents.delete(page);
             return serialiser(evaluer(documentDe(page), langage, selecteur));
           },
