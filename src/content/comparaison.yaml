@@ -1,0 +1,182 @@
+- id: par-id
+  tache: Un élément par son `id`
+  page: formulaire
+  css: '#email'
+  xpath: //*[@id='email']
+  attendu: { noeuds: [ "input#email" ] }
+
+- id: par-classe
+  tache: Les éléments qui ont une classe
+  page: tableau
+  css: .badge--actif
+  xpath: //*[contains(concat(' ', normalize-space(@class), ' '), ' badge--actif ')]
+  note: XPath n'a pas de notion de classe ; il faut la recette de la classe exacte.
+  attendu: { noeuds: [ "span \"Actif\" dans tr[data-id=\"u1\"]", "span \"Actif\" dans tr[data-id=\"u2\"]", "span \"Actif\" dans tr[data-id=\"u4\"]" ] }
+
+- id: attribut-commence
+  tache: Un attribut qui commence par...
+  page: tableau
+  css: a[href^="?page"]
+  xpath: //a[starts-with(@href, '?page')]
+  attendu: { noeuds: [ "a \"1\"", "a \"2\"", "a \"3\"", "a \"Suivant\"" ] }
+
+- id: attribut-finit
+  tache: Un attribut qui se termine par...
+  page: panier
+  css: img[src$=".jpg"]
+  xpath: //img[substring(@src, string-length(@src) - 3) = '.jpg']
+  note: '`ends-with()` n''existe pas en XPath 1.0.'
+  attendu: { noeuds: [ "img dans li[data-sku=\"LIV-001\"]", "img dans li[data-sku=\"JEU-042\"]", "img dans li[data-sku=\"LIV-017\"]" ] }
+
+- id: attribut-casse
+  tache: Une valeur d'attribut sans tenir compte de la casse
+  page: formulaire
+  css: input[name="motdepasse" i]
+  xpath: //input[translate(@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz') = 'motdepasse']
+  attendu: { noeuds: [ "input#mot-de-passe" ] }
+
+- id: enfant-direct
+  tache: Les enfants directs
+  page: panier
+  css: '#panier > li'
+  xpath: //*[@id='panier']/li
+  attendu: { noeuds: [ "li \"Dune 12,50 € Quantité Retirer\"", "li \"Azul 29,90 € 39,90 € -25 % Qua…\"", "li \"Fondation 8,00 € Plus disponib…\"" ] }
+
+- id: descendants
+  tache: Les descendants à toute profondeur
+  page: panier
+  css: '#panier h2'
+  xpath: //*[@id='panier']//h2
+  attendu: { noeuds: [ "h2 \"Dune\" dans li[data-sku=\"LIV-001\"]", "h2 \"Azul\" dans li[data-sku=\"JEU-042\"]", "h2 \"Fondation\" dans li[data-sku=\"LIV-017\"]" ] }
+
+- id: frere-suivant
+  tache: Le frère qui suit immédiatement
+  page: formulaire
+  css: label[for="email"] + input
+  xpath: //label[@for='email']/following-sibling::*[1][self::input]
+  attendu: { noeuds: [ "input#email" ] }
+
+- id: frere-precedent
+  tache: Le frère qui précède
+  page: formulaire
+  css: 'label:has(+ #email)'
+  xpath: //*[@id='email']/preceding-sibling::*[1][self::label]
+  note: possible en CSS seulement depuis `:has()`.
+  attendu: { noeuds: [ "label \"Adresse e-mail\"" ] }
+
+- id: parent
+  tache: Le parent d'un élément
+  page: formulaire
+  css: ':has(> #email)'
+  xpath: //*[@id='email']/..
+  attendu: { noeuds: [ "div \"Adresse e-mail Nous ne partage…\"" ] }
+
+- id: contient-element
+  tache: Un élément qui contient un autre élément
+  page: tableau
+  css: tr:has(.badge--suspendu)
+  xpath: //tr[.//*[contains(concat(' ', normalize-space(@class), ' '), ' badge--suspendu ')]]
+  attendu: { noeuds: [ "tr \"Chloé Durand Paris Lecteur Sus…\"" ] }
+
+- id: position
+  tache: La n-ième ligne
+  page: tableau
+  css: tbody tr:nth-child(2)
+  xpath: //tbody/tr[2]
+  attendu: { noeuds: [ "tr \"Bruno Petit Lyon Éditeur Actif…\"" ] }
+
+- id: dernier
+  tache: Le dernier élément
+  page: tableau
+  css: tbody tr:last-child
+  xpath: //tbody/tr[last()]
+  attendu: { noeuds: [ "tr \"Emma Moreau Lecteur En attente…\"" ] }
+
+- id: negation
+  tache: Tout sauf...
+  page: tableau
+  css: tbody tr:not(.selectionnee)
+  xpath: //tbody/tr[not(contains(concat(' ', normalize-space(@class), ' '), ' selectionnee '))]
+  attendu: { noeuds: [ "tr \"Alice Martin Paris Admin Actif…\"", "tr \"Bruno Petit Lyon Éditeur Actif…\"", "tr \"David Leroy Marseille Éditeur …\"", "tr \"Emma Moreau Lecteur En attente…\"" ] }
+
+- id: union
+  tache: Plusieurs sélecteurs à la fois
+  page: formulaire
+  css: h1, legend
+  xpath: //h1 | //legend
+  attendu: { noeuds: [ "h1 \"Créer un compte\"", "legend \"Identité\"", "legend \"Sécurité\"", "legend \"Préférences\"" ] }
+
+- id: coche
+  tache: Les cases cochées
+  page: formulaire
+  css: input:checked
+  xpath: //input[@checked]
+  note: identiques ici, mais XPath lit l'**attribut** initial alors que `:checked` suit l'état réel. Si l'utilisateur coche une case, seul CSS le voit.
+  attendu: { noeuds: [ "input[name=\"offre\"]", "input[name=\"newsletter\"]" ] }
+
+- id: par-texte
+  tache: Un bouton par son texte
+  page: panier
+  css: null
+  xpath: //button[normalize-space() = 'Passer la commande']
+  note: CSS ne lit jamais le texte ; les frameworks e2e ajoutent `:has-text()` ou `getByText()`.
+  attendu: { noeuds: [ "button#commander \"Passer la commande\"" ] }
+
+- id: ligne-par-texte
+  tache: La ligne qui contient un texte
+  page: tableau
+  css: null
+  xpath: //tr[td[normalize-space() = 'Chloé Durand']]
+  attendu: { noeuds: [ "tr \"Chloé Durand Paris Lecteur Sus…\"" ] }
+
+- id: remonter-depuis-texte
+  tache: Le conteneur d'un élément trouvé par son texte
+  page: tableau
+  css: null
+  xpath: //span[. = 'Suspendu']/ancestor::tr
+  attendu: { noeuds: [ "tr \"Chloé Durand Paris Lecteur Sus…\"" ] }
+
+- id: premier-du-document
+  tache: Le premier élément de tout le document
+  page: panier
+  css: null
+  xpath: (//li)[1]
+  note: en CSS, `li:first-child` peut renvoyer plusieurs éléments ; il faut `querySelector('li')` en JavaScript.
+  attendu: { noeuds: [ "li \"Livres\"" ] }
+
+- id: compter
+  tache: Compter des éléments
+  page: tableau
+  css: null
+  xpath: count(//tbody/tr)
+  note: en CSS, on compte en JavaScript avec `querySelectorAll(...).length`.
+  attendu: { nombre: 5 }
+
+- id: lire-texte
+  tache: Lire un texte ou un attribut
+  page: article
+  css: null
+  xpath: string(//time/@datetime)
+  attendu: { chaine: "2026-03-14" }
+
+- id: commentaire
+  tache: Un commentaire HTML
+  page: article
+  css: null
+  xpath: //comment()
+  attendu: { noeuds: [ "#comment \"TODO : ajouter une section sur…\"" ] }
+
+- id: n-ieme-de-type-filtre
+  tache: La 2ᵉ ligne parmi celles qui ont un badge Actif
+  page: tableau
+  css: 'tbody tr:nth-child(2 of :has(.badge--actif))'
+  xpath: //tbody/tr[.//span[. = 'Actif']][2]
+  attendu: { noeuds: [ "tr \"Bruno Petit Lyon Éditeur Actif…\"" ] }
+
+- id: etat-formulaire
+  tache: Les champs obligatoires encore vides
+  page: formulaire
+  css: 'input:invalid'
+  xpath: null
+  note: XPath ne connaît pas l'état de validation des champs.
+  attendu: { noeuds: [ "input#prenom", "input#nom", "input#email", "input#mot-de-passe", "input#confirmation", "input[name=\"cgu\"]" ] }

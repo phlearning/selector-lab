@@ -1,0 +1,64 @@
+titre: Combinateurs
+langage: css
+ordre: 3
+intro: |
+  Les combinateurs relient deux sélecteurs selon la position des éléments dans l'arbre. En CSS, ils ne vont
+  que **vers le bas** (descendants) ou **vers la droite** (frères suivants). Pour remonter vers un parent ou
+  un frère précédent, il faut [:has()](../logiques/#has), ou XPath et ses [axes](../../xpath/axes/).
+entrees:
+  - id: descendant
+    titre: A B
+    syntaxe: ancêtre descendant
+    resume: >-
+      Un espace : `B` est un descendant de `A`, à n'importe quelle profondeur.
+    bcd: css.selectors.descendant
+    exemples:
+      - selecteur: '#panier h2'
+        page: panier
+        attendu: { noeuds: [ 'h2 "Dune" dans li[data-sku="LIV-001"]', 'h2 "Azul" dans li[data-sku="JEU-042"]', 'h2 "Fondation" dans li[data-sku="LIV-017"]' ] }
+    pieges:
+      - >-
+        Un espace de trop change tout : `button .btn` (bouton contenant un `.btn`) n'est pas `button.btn`.
+
+  - id: enfant
+    titre: A > B
+    syntaxe: parent > enfant
+    resume: >-
+      `B` est un enfant **direct** de `A`. Plus précis et plus rapide que le combinateur descendant.
+    bcd: css.selectors.child
+    exemples:
+      - selecteur: '#panier > li'
+        page: panier
+        attendu: { noeuds: [ 'li "Dune 12,50 € Quantité Retirer"', 'li "Azul 29,90 € 39,90 € -25 % Qua…"', 'li "Fondation 8,00 € Plus disponib…"' ] }
+      - selecteur: '#panier > h2'
+        page: panier
+        note: les `h2` sont des petits-enfants de la liste, pas des enfants directs.
+        attendu: { noeuds: [] }
+
+  - id: frere-adjacent
+    titre: A + B
+    syntaxe: frère + frère-suivant-immédiat
+    resume: >-
+      `B` suit **immédiatement** `A`, avec le même parent. Pratique pour atteindre le champ qui suit un libellé.
+    bcd: css.selectors.next-sibling
+    exemples:
+      - selecteur: 'label[for="email"] + input'
+        page: formulaire
+        attendu: { noeuds: [ input#email ] }
+      - selecteur: 'dt + dd'
+        page: panier
+        attendu: { noeuds: [ 'dd "54,90 €"', dd "Offerte", 'dd "54,90 €"' ] }
+
+  - id: freres-suivants
+    titre: A ~ B
+    syntaxe: frère ~ frères-suivants
+    resume: >-
+      Tous les `B` qui suivent `A` avec le même parent, pas forcément immédiatement.
+    bcd: css.selectors.subsequent-sibling
+    exemples:
+      - selecteur: '#strategies ~ h2'
+        page: article
+        attendu: { noeuds: [ h2#en-anglais "Et en anglais ?", h2#conclusion "Conclusion" ] }
+    pieges:
+      - >-
+        Il n'existe pas de combinateur « frère précédent ». Utilisez `A:has(+ B)` (voir [:has()](../logiques/#has)) ou l'axe XPath `preceding-sibling::`.

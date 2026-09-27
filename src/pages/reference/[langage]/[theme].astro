@@ -1,0 +1,38 @@
+---
+import Entree from '../../../components/Entree.astro';
+import Support from '../../../components/Support.astro';
+import Reference from '../../../layouts/Reference.astro';
+import { md } from '../../../lib/markdown';
+import { nomLangage, slugTheme, themesTries, type Theme } from '../../../lib/reference';
+
+export async function getStaticPaths() {
+  const themes = await themesTries();
+  return themes.map((theme) => ({
+    params: { langage: theme.data.langage, theme: slugTheme(theme) },
+    props: { theme },
+  }));
+}
+
+const { theme } = Astro.props as { theme: Theme };
+const { titre, langage, intro, entrees } = theme.data;
+---
+
+<Reference title={`${titre} (${nomLangage(langage)})`}>
+  <p class="fil">{nomLangage(langage)}</p>
+  <h1>{titre}</h1>
+  <div class="intro" set:html={md(intro)} />
+  {langage === 'xpath' && (
+    <details class="support-global">
+      <summary>Support de XPath 1.0 dans les navigateurs</summary>
+      <p>
+        Les navigateurs n'implémentent que XPath 1.0, via <code>document.evaluate()</code>. Toutes les fonctions XPath 1.0
+        sont disponibles partout ; chaque Exemple de cette page est vérifié en CI dans Chromium, Firefox et WebKit.
+      </p>
+      <Support cles={['api.Document.evaluate']} />
+    </details>
+  )}
+  <nav class="sommaire-page" aria-label="Sur cette page">
+    <ul>{entrees.map((e) => <li><a href={`#${e.id}`}><code>{e.titre}</code></a></li>)}</ul>
+  </nav>
+  {entrees.map((entree) => <Entree entree={entree} langage={langage} />)}
+</Reference>

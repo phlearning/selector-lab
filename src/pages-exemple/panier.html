@@ -1,0 +1,64 @@
+<header class="entete">
+  <a href="/" class="logo">Boutique</a>
+  <nav aria-label="Principale">
+    <ul>
+      <li><a href="/livres">Livres</a></li>
+      <li><a href="/jeux">Jeux</a></li>
+      <li><a href="/panier" aria-current="page">Panier <span class="compteur">3</span></a></li>
+    </ul>
+  </nav>
+</header>
+<main>
+  <h1>Mon panier</h1>
+  <ul id="panier" class="panier">
+    <li class="article" data-sku="LIV-001" data-prix="12.50">
+      <img src="/img/dune.jpg" alt="Couverture de Dune">
+      <div class="article__infos">
+        <h2 class="article__titre">Dune</h2>
+        <p class="article__prix">12,50 €</p>
+        <label>Quantité <input type="number" name="quantite" value="2" min="1" max="10"></label>
+      </div>
+      <button type="button" class="btn btn--lien" aria-label="Retirer Dune du panier">Retirer</button>
+    </li>
+    <li class="article article--promo" data-sku="JEU-042" data-prix="29.90">
+      <img src="/img/azul.jpg" alt="Boîte du jeu Azul">
+      <div class="article__infos">
+        <h2 class="article__titre">Azul</h2>
+        <p class="article__prix">29,90 € <del>39,90 €</del> <span class="promo">-25 %</span></p>
+        <label>Quantité <input type="number" name="quantite" value="1" min="1" max="10"></label>
+      </div>
+      <button type="button" class="btn btn--lien" aria-label="Retirer Azul du panier">Retirer</button>
+    </li>
+    <li class="article article--indisponible" data-sku="LIV-017" data-prix="8.00">
+      <img src="/img/fondation.jpg" alt="Couverture de Fondation">
+      <div class="article__infos">
+        <h2 class="article__titre">Fondation</h2>
+        <p class="article__prix">8,00 €</p>
+        <p class="article__stock">Plus disponible</p>
+        <label>Quantité <input type="number" name="quantite" value="1" min="1" max="10" disabled></label>
+      </div>
+      <button type="button" class="btn btn--lien" aria-label="Retirer Fondation du panier">Retirer</button>
+    </li>
+  </ul>
+  <section class="recapitulatif" aria-labelledby="titre-recap">
+    <h2 id="titre-recap">Récapitulatif</h2>
+    <dl>
+      <dt>Sous-total</dt>
+      <dd data-total="sous-total">54,90 €</dd>
+      <dt>Livraison</dt>
+      <dd>Offerte</dd>
+      <dt>Total</dt>
+      <dd data-total="total"><strong>54,90 €</strong></dd>
+    </dl>
+    <form class="code-promo">
+      <label for="code">Code promo</label>
+      <input id="code" name="code" type="text">
+      <button type="submit">Appliquer</button>
+    </form>
+    <button type="button" id="commander" class="btn btn--primaire">Passer la commande</button>
+  </section>
+</main>
+<footer class="pied">
+  <p lang="en">Secure payment by <a href="https://example.com/pay">ExamplePay</a></p>
+  <p>© 2026 Boutique</p>
+</footer>

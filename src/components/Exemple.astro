@@ -1,0 +1,31 @@
+---
+import Resultat from './Resultat.astro';
+import { mdInline } from '../lib/markdown';
+import { pageExemple } from '../lib/pagesExemple';
+import { nomLangage } from '../lib/reference';
+import type { Attendu } from '../lib/resultat';
+import { url } from '../lib/url';
+
+interface Props {
+  selecteur: string;
+  langage: string;
+  page: string;
+  note?: string;
+  attendu?: Attendu;
+}
+
+const { selecteur, langage, page, note, attendu } = Astro.props;
+const pageEx = pageExemple(page);
+---
+
+<figure class="exemple">
+  <div class="exemple__code">
+    <span class="etiquette-langage">{nomLangage(langage)}</span>
+    <code>{selecteur}</code>
+  </div>
+  <figcaption>
+    Sur <a href={url(`pages-exemple/${page}/`)}>{pageEx.titre}</a>
+    {note && <> - <span set:html={mdInline(note)} /></>}
+  </figcaption>
+  <Resultat attendu={attendu} />
+</figure>

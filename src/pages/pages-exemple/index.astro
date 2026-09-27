@@ -1,0 +1,21 @@
+---
+import Base from '../../layouts/Base.astro';
+import { pagesExemple } from '../../lib/pagesExemple';
+import { url } from '../../lib/url';
+---
+
+<Base title="Pages d'exemple">
+  <h1>Pages d'exemple</h1>
+  <p>
+    Des interfaces réalistes sur lesquelles sont évalués les Exemples de la Référence. Elles serviront aussi de Document
+    cible dans le Testeur et de décor aux Scénarios e2e du Jeu.
+  </p>
+  <div class="cards">
+    {pagesExemple.map((p) => (
+      <a class="card" href={url(`pages-exemple/${p.id}/`)}>
+        <h2>{p.titre}</h2>
+        <p>{p.description}</p>
+      </a>
+    ))}
+  </div>
+</Base>

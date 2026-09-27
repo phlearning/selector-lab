@@ -1,0 +1,77 @@
+<main>
+  <h1>Créer un compte</h1>
+  <form id="inscription" class="form form--inscription" action="/inscription" method="post">
+    <fieldset>
+      <legend>Identité</legend>
+      <div class="champ">
+        <label for="prenom">Prénom</label>
+        <input id="prenom" name="prenom" type="text" autocomplete="given-name" required>
+      </div>
+      <div class="champ">
+        <label for="nom">Nom</label>
+        <input id="nom" name="nom" type="text" autocomplete="family-name" required>
+      </div>
+      <div class="champ">
+        <label for="email">Adresse e-mail</label>
+        <input id="email" name="email" type="email" placeholder="vous@exemple.fr" required aria-describedby="email-aide">
+        <p id="email-aide" class="aide">Nous ne partagerons jamais votre adresse.</p>
+      </div>
+      <div class="champ">
+        <label for="telephone">Téléphone <span class="facultatif">(facultatif)</span></label>
+        <input id="telephone" name="telephone" type="tel" placeholder="06 12 34 56 78">
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Sécurité</legend>
+      <div class="champ">
+        <label for="mot-de-passe">Mot de passe</label>
+        <input id="mot-de-passe" name="motDePasse" type="password" minlength="12" required>
+        <p class="aide">12 caractères minimum.</p>
+      </div>
+      <div class="champ">
+        <label for="confirmation">Confirmation</label>
+        <input id="confirmation" name="confirmation" type="password" required>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Préférences</legend>
+      <div class="champ">
+        <label for="pays">Pays</label>
+        <select id="pays" name="pays">
+          <option value="">Choisir…</option>
+          <option value="fr" selected>France</option>
+          <option value="be">Belgique</option>
+          <option value="ch">Suisse</option>
+          <option value="ca" lang="fr-CA">Canada</option>
+        </select>
+      </div>
+      <div class="champ champ--radio" role="radiogroup" aria-labelledby="titre-offre">
+        <p id="titre-offre">Offre</p>
+        <label><input type="radio" name="offre" value="gratuite" checked> Gratuite</label>
+        <label><input type="radio" name="offre" value="pro"> Pro</label>
+        <label><input type="radio" name="offre" value="entreprise" disabled> Entreprise (bientôt)</label>
+      </div>
+      <div class="champ champ--case">
+        <label><input type="checkbox" name="newsletter" value="oui" checked> Recevoir la newsletter</label>
+      </div>
+      <div class="champ champ--case">
+        <label><input type="checkbox" name="cgu" value="oui" required> J'accepte les <a href="/cgu" target="_blank">conditions d'utilisation</a></label>
+      </div>
+      <div class="champ">
+        <label for="code-parrain">Code de parrainage</label>
+        <input id="code-parrain" name="codeParrain" type="text" value="AMI-2026" readonly>
+      </div>
+      <div class="champ">
+        <label for="bio">Présentation</label>
+        <textarea id="bio" name="bio" rows="3" placeholder="Quelques mots sur vous"></textarea>
+      </div>
+    </fieldset>
+    <!-- Les messages d'erreur sont injectés ici par le script de validation -->
+    <div class="erreurs" role="alert" hidden></div>
+    <div class="actions">
+      <button type="reset" class="btn btn--secondaire">Effacer</button>
+      <button type="submit" class="btn btn--primaire" data-testid="inscription-valider">Créer mon compte</button>
+    </div>
+  </form>
+  <p>Déjà inscrit ? <a href="/connexion">Se connecter</a></p>
+</main>

@@ -1,0 +1,164 @@
+titre: Axes
+langage: xpath
+ordre: 2
+intro: |
+  Chaque étape d'un chemin s'écrit en réalité `axe::test[prédicat]`. L'**axe** indique dans quelle
+  direction chercher depuis le nœud courant. C'est ce qui rend XPath plus puissant que CSS : il peut
+  **remonter** vers les ancêtres et **reculer** vers les frères précédents.
+
+  Dans les axes « vers l'arrière » (`ancestor`, `preceding`, `preceding-sibling`), les positions sont
+  comptées **à partir du nœud courant** : `[1]` est le plus proche, pas le premier du document.
+entrees:
+  - id: child
+    titre: 'child::'
+    syntaxe: 'child::balise   (abrégé : balise)'
+    resume: >-
+      Les enfants directs. C'est l'axe par défaut : `//ol/li` est l'abréviation de `//ol/child::li`.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#axes
+    exemples:
+      - selecteur: //ol/child::li
+        page: article
+        attendu: { noeuds: [ li "Cibler le rôle et le nom acces…", li "Utiliser un attribut dédié au …", "li \"En dernier recours, s'appuyer …\"" ] }
+
+  - id: descendant
+    titre: 'descendant::'
+    syntaxe: descendant::balise
+    resume: Tous les descendants, à n'importe quelle profondeur.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#axes
+    exemples:
+      - selecteur: //*[@id='utilisateurs']/descendant::button[@disabled]
+        page: tableau
+        attendu: { noeuds: [ 'button "Supprimer" dans tr[data-id="u1"]' ] }
+
+  - id: descendant-or-self
+    titre: 'descendant-or-self::'
+    syntaxe: descendant-or-self::balise
+    resume: >-
+      Le nœud courant et tous ses descendants. `//` est l'abréviation de `/descendant-or-self::node()/`.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#axes
+    exemples:
+      - selecteur: //section/descendant-or-self::*[@aria-labelledby or @id='code']
+        page: panier
+        attendu: { noeuds: [ 'section "Récapitulatif Sous-total 54,90…"', input#code ] }
+
+  - id: parent
+    titre: 'parent::'
+    syntaxe: 'parent::balise   (abrégé : ..)'
+    resume: Le parent direct, s'il correspond au test.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#axes
+    exemples:
+      - selecteur: //input[@id='email']/parent::div
+        page: formulaire
+        attendu: { noeuds: [ div "Adresse e-mail Nous ne partage…" ] }
+
+  - id: ancestor
+    titre: 'ancestor::'
+    syntaxe: ancestor::balise
+    resume: >-
+      Tous les ancêtres, du parent jusqu'à la racine. Indispensable en e2e pour remonter d'un élément trouvé par son texte vers son conteneur (la ligne, la carte, le formulaire).
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#axes
+    exemples:
+      - selecteur: //input[@id='email']/ancestor::fieldset
+        page: formulaire
+        attendu: { noeuds: [ fieldset "Identité Prénom Nom Adresse e-…" ] }
+      - selecteur: //input[@id='email']/ancestor::*[2]
+        page: formulaire
+        note: '`[2]` compte depuis l''élément : 1 est le `div.champ`, 2 le `fieldset`.'
+        attendu: { noeuds: [ fieldset "Identité Prénom Nom Adresse e-…" ] }
+      - selecteur: //span[.='Suspendu']/ancestor::tr
+        page: tableau
+        attendu: { noeuds: [ tr "Chloé Durand Paris Lecteur Sus…" ] }
+
+  - id: ancestor-or-self
+    titre: 'ancestor-or-self::'
+    syntaxe: ancestor-or-self::balise
+    resume: Le nœud courant et tous ses ancêtres. L'équivalent XPath de `closest()` en JavaScript.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#axes
+    exemples:
+      - selecteur: //li[@data-sku='LIV-001']/ancestor-or-self::*[@data-sku]
+        page: panier
+        attendu: { noeuds: [ 'li "Dune 12,50 € Quantité Retirer"' ] }
+
+  - id: following-sibling
+    titre: 'following-sibling::'
+    syntaxe: following-sibling::balise
+    resume: Les frères suivants, dans l'ordre du document.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#axes
+    exemples:
+      - selecteur: //label[@for='email']/following-sibling::input
+        page: formulaire
+        attendu: { noeuds: [ input#email ] }
+      - selecteur: //dt[.='Total']/following-sibling::dd[1]
+        page: panier
+        note: la valeur associée à un terme d'une liste de définitions, un grand classique des tests.
+        attendu: { noeuds: [ 'dd "54,90 €"' ] }
+
+  - id: preceding-sibling
+    titre: 'preceding-sibling::'
+    syntaxe: preceding-sibling::balise
+    resume: >-
+      Les frères précédents. `[1]` désigne le plus proche, c'est-à-dire celui qui est juste avant.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#axes
+    exemples:
+      - selecteur: //input[@id='email']/preceding-sibling::label
+        page: formulaire
+        attendu: { noeuds: [ label "Adresse e-mail" ] }
+      - selecteur: //h2[@id='conclusion']/preceding-sibling::h2[1]
+        page: article
+        attendu: { noeuds: [ h2#en-anglais "Et en anglais ?" ] }
+
+  - id: following
+    titre: 'following::'
+    syntaxe: following::balise
+    resume: >-
+      Tous les nœuds qui suivent la fin du nœud courant dans le document, quelle que soit leur profondeur, sauf ses propres descendants. Plus large que `following-sibling::`.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#axes
+    exemples:
+      - selecteur: //h2[@id='en-anglais']/following::p[2]
+        page: article
+        note: '`following-sibling::p[2]` renverrait « Relisez vos sélecteurs... », car il ignore le paragraphe imbriqué dans le `blockquote`.'
+        attendu: { noeuds: [ 'p "Test the behaviour, not the im…"' ] }
+      - selecteur: //h2[@id='conclusion']/following::a
+        page: article
+        attendu: { noeuds: [ a "e2e", a "css", a "xpath", a "Pourquoi", a "Stratégies", a "Conclusion" ] }
+
+  - id: preceding
+    titre: 'preceding::'
+    syntaxe: preceding::balise
+    resume: >-
+      Tous les nœuds qui se terminent avant le nœud courant, sauf ses ancêtres. `[1]` est le plus proche.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#axes
+    exemples:
+      - selecteur: //h2[@id='strategies']/preceding::p[1]
+        page: article
+        attendu: { noeuds: [ 'p "Les classes générées, comme cs…"' ] }
+
+  - id: attribute
+    titre: 'attribute::'
+    syntaxe: 'attribute::nom   (abrégé : @nom)'
+    resume: Les attributs du nœud courant.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#axes
+    exemples:
+      - selecteur: //img/attribute::alt
+        page: panier
+        attendu: { noeuds: [ '@alt="Couverture de Dune"', '@alt="Boîte du jeu Azul"', '@alt="Couverture de Fondation"' ] }
+
+  - id: self
+    titre: 'self::'
+    syntaxe: self::balise
+    resume: >-
+      Le nœud courant lui-même, s'il correspond au test. Sert surtout à tester le **type** d'un nœud dans un prédicat : « le frère suivant immédiat, à condition que ce soit un `input` ».
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#axes
+    exemples:
+      - selecteur: //label[@for='email']/following-sibling::*[1][self::input]
+        page: formulaire
+        attendu: { noeuds: [ input#email ] }
+      - selecteur: //*[self::h1 or self::legend]
+        page: formulaire
+        attendu: { noeuds: [ h1 "Créer un compte", legend "Identité", legend "Sécurité", legend "Préférences" ] }
+
+  - id: namespace
+    titre: 'namespace::'
+    resume: >-
+      Les nœuds d'espace de noms. Sans usage dans une page HTML et pris en charge de façon inégale selon les navigateurs : n'en tenez pas compte pour les tests e2e.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#axes

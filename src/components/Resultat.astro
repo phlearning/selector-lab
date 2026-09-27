@@ -1,0 +1,25 @@
+---
+import type { Attendu } from '../lib/resultat';
+
+interface Props {
+  attendu?: Attendu;
+}
+
+const { attendu } = Astro.props;
+const noeuds = attendu && 'noeuds' in attendu ? attendu.noeuds : null;
+---
+
+<div class="resultat">
+  {!attendu && <span class="resultat__manquant">Résultat attendu non renseigné</span>}
+  {noeuds && noeuds.length === 0 && <span>Aucun nœud</span>}
+  {noeuds && noeuds.length > 0 && (
+    <>
+      <span>{noeuds.length} {noeuds.length > 1 ? 'nœuds' : 'nœud'} :</span>
+      <ul class="resultat__noeuds">{noeuds.map((n) => <li><code>{n}</code></li>)}</ul>
+    </>
+  )}
+  {attendu && 'nombre' in attendu && <span>Nombre : <code>{attendu.nombre}</code></span>}
+  {attendu && 'chaine' in attendu && <span>Chaîne : <code>"{attendu.chaine}"</code></span>}
+  {attendu && 'booleen' in attendu && <span>Booléen : <code>{String(attendu.booleen)}</code></span>}
+  {attendu && 'erreur' in attendu && <span class="resultat__erreur">Erreur : expression refusée par le navigateur</span>}
+</div>

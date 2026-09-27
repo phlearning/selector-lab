@@ -1,0 +1,46 @@
+titre: Console DevTools
+langage: dom
+ordre: 3
+intro: |
+  Les consoles de Chrome, Edge, Firefox et Safari fournissent des raccourcis pour tester un sélecteur
+  directement sur la page à automatiser. Ils ne font **pas** partie du DOM : ils n'existent que dans la
+  console, et ne fonctionnent ni dans le code de la page, ni dans un script de test.
+
+  Le panneau Éléments permet aussi de chercher (Ctrl+F, ou Cmd+F) avec un sélecteur CSS ou une expression
+  XPath : le nombre de correspondances s'affiche, ce qui aide à vérifier qu'un sélecteur est unique.
+entrees:
+  - id: dollar
+    titre: $(sélecteur)
+    statut: devtools
+    resume: >-
+      Équivalent de `document.querySelector()`, sauf si la page définit elle-même `$` (jQuery par exemple).
+      Un second argument optionnel donne l'élément de départ.
+
+  - id: double-dollar
+    titre: $$(sélecteur)
+    statut: devtools
+    resume: >-
+      Équivalent de `document.querySelectorAll()`, mais renvoie un vrai tableau (`Array`), sur lequel on peut
+      appeler directement `.map()` ou `.filter()`.
+
+  - id: dollar-x
+    titre: $x(expression)
+    statut: devtools
+    resume: >-
+      Évalue une expression XPath et renvoie un tableau de nœuds, ou directement le nombre, la chaîne ou le
+      booléen obtenu. Le moyen le plus rapide de tester une expression avant de l'écrire dans un test.
+
+  - id: dollar-zero
+    titre: $0
+    statut: devtools
+    resume: >-
+      L'élément actuellement sélectionné dans le panneau Éléments (`$1` est le précédent, etc.). Pratique
+      pour tester `$0.closest('tr')` ou `$0.matches(':disabled')` sur l'élément qu'on vient d'inspecter.
+
+  - id: copier-selecteur
+    titre: Copier le sélecteur / le XPath
+    statut: devtools
+    resume: >-
+      Le menu contextuel d'un élément propose « Copier le sélecteur » et « Copier le XPath ». Les résultats
+      sont uniques mais **fragiles** (positions, classes générées) : servez-vous en comme point de départ,
+      puis réécrivez-les avec des attributs stables ou le texte visible.

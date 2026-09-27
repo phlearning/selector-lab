@@ -1,0 +1,71 @@
+titre: XPath en JavaScript
+langage: dom
+ordre: 2
+intro: |
+  Les navigateurs évaluent XPath 1.0 avec `document.evaluate()`. L'API est ancienne et verbeuse : on
+  choisit le **type de résultat** voulu, puis on lit la propriété correspondante de l'objet `XPathResult`.
+entrees:
+  - id: evaluate
+    titre: document.evaluate()
+    syntaxe: document.evaluate(expression, nœudContexte, résolveurNS, type, résultatÀRéutiliser)
+    resume: |
+      Évalue l'expression à partir du nœud de contexte. Pour une page HTML, le résolveur d'espaces de noms
+      et le dernier argument valent `null`.
+
+      Le **nœud de contexte** compte : une expression relative (`.//input`) part de lui, mais une
+      expression qui commence par `//` repart toujours de la racine du document.
+    bcd: api.Document.evaluate
+    exemples:
+      - selecteur: document.evaluate('.//input', document.querySelector('.recapitulatif'), null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue
+        page: panier
+        attendu: { noeuds: [ input#code ] }
+      - selecteur: document.evaluate('//input', document.querySelector('.recapitulatif'), null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue
+        page: panier
+        note: sans le point, la recherche ignore le contexte et renvoie le premier `input` de la page.
+        attendu: { noeuds: [ 'input[name="quantite"] dans li[data-sku="LIV-001"]' ] }
+
+  - id: types-resultat
+    titre: XPathResult (types)
+    syntaxe: |
+      XPathResult.NUMBER_TYPE                 → .numberValue
+      XPathResult.STRING_TYPE                 → .stringValue
+      XPathResult.BOOLEAN_TYPE                → .booleanValue
+      XPathResult.FIRST_ORDERED_NODE_TYPE     → .singleNodeValue
+      XPathResult.ORDERED_NODE_SNAPSHOT_TYPE  → .snapshotLength, .snapshotItem(i)
+      XPathResult.ORDERED_NODE_ITERATOR_TYPE  → .iterateNext()
+      XPathResult.ANY_TYPE                    → .resultType indique le type obtenu
+    resume: >-
+      Le type demandé détermine la propriété à lire. Demander `NUMBER_TYPE` pour `count(...)` donne un nombre ; demander un type de nœud pour une expression qui renvoie un nombre lève une erreur.
+    bcd: api.XPathResult
+    exemples:
+      - selecteur: document.evaluate('count(//tbody/tr)', document, null, XPathResult.NUMBER_TYPE, null).numberValue
+        page: tableau
+        attendu: { nombre: 5 }
+      - selecteur: document.evaluate('//tbody/tr', document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotLength
+        page: tableau
+        attendu: { nombre: 5 }
+
+  - id: snapshot-iterateur
+    titre: snapshot ou itérateur
+    resume: |
+      Un **snapshot** est une copie figée des résultats, qu'on parcourt avec `snapshotItem(i)`. Un
+      **itérateur** se parcourt avec `iterateNext()`, mais devient invalide (erreur) dès que le document
+      est modifié pendant le parcours.
+
+      Dans un test, préférez le snapshot : on clique souvent sur un élément, ce qui modifie la page.
+    bcd: [ api.XPathResult.snapshotItem, api.XPathResult.iterateNext ]
+    exemples:
+      - selecteur: "(() => { const r = document.evaluate('//li[@data-sku]', document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null); return Array.from({ length: r.snapshotLength }, (_, i) => r.snapshotItem(i)); })()"
+        page: panier
+        attendu: { noeuds: [ 'li "Dune 12,50 € Quantité Retirer"', 'li "Azul 29,90 € 39,90 € -25 % Qua…"', 'li "Fondation 8,00 € Plus disponib…"' ] }
+
+  - id: create-expression
+    titre: createExpression()
+    syntaxe: document.createExpression(expression, résolveurNS)
+    resume: >-
+      Compile une expression une fois pour l'évaluer ensuite sur plusieurs nœuds de contexte, avec `expression.evaluate(contexte, type)`.
+    bcd: api.Document.createExpression
+    exemples:
+      - selecteur: "(() => { const prix = document.createExpression('string(.//p[contains(@class, \"prix\")])', null); return Array.from(document.querySelectorAll('li.article'), (li) => prix.evaluate(li, XPathResult.STRING_TYPE).stringValue.trim()).join(' | '); })()"
+        page: panier
+        attendu: { chaine: "12,50 € | 29,90 € 39,90 € -25 % | 8,00 €" }

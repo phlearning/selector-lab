@@ -1,8 +1,43 @@
 ---
-import Base from '../../layouts/Base.astro';
+import Reference from '../../layouts/Reference.astro';
+import { langages, slugTheme, themesTries } from '../../lib/reference';
+import { url } from '../../lib/url';
+
+const themes = await themesTries();
 ---
 
-<Base title="Référence">
+<Reference title="Référence">
   <h1>Référence</h1>
-  <p class="notice">En construction : cette partie arrive au jalon 2.</p>
-</Base>
+  <p>
+    Chaque Entrée décrit une fonctionnalité d'un Langage de sélection : sa syntaxe, des Exemples évalués sur les{' '}
+    <a href={url('pages-exemple/')}>Pages d'exemple</a>, les pièges connus et son Support navigateur.
+  </p>
+  <p class="notice">
+    Chaque Exemple affiche le résultat réellement obtenu : la CI les réévalue dans Chromium, Firefox et WebKit à chaque
+    modification. Le Support navigateur provient des données de compatibilité de MDN.
+  </p>
+  {langages.map((l) => (
+    <section class="apercu">
+      <h2>{l.nom}</h2>
+      <div class="cards">
+        {themes
+          .filter((t) => t.data.langage === l.id)
+          .map((t) => (
+            <a class="card" href={url(`reference/${l.id}/${slugTheme(t)}/`)}>
+              <h3>{t.data.titre}</h3>
+              <p>{t.data.entrees.length} entrées</p>
+            </a>
+          ))}
+      </div>
+    </section>
+  ))}
+  <section class="apercu">
+    <h2>Comparer</h2>
+    <div class="cards">
+      <a class="card" href={url('reference/css-vs-xpath/')}>
+        <h3>CSS vs XPath</h3>
+        <p>La même tâche dans les deux langages, et ce que seul XPath sait faire.</p>
+      </a>
+    </div>
+  </section>
+</Reference>

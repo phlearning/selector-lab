@@ -1,0 +1,134 @@
+titre: Chemins et nœuds
+langage: xpath
+ordre: 1
+intro: |
+  Une expression XPath est un **chemin** : une suite d'étapes séparées par `/`, chacune partant des nœuds
+  trouvés par l'étape précédente. Contrairement à CSS, XPath ne sélectionne pas que des éléments : il voit
+  aussi les **attributs**, les **nœuds texte** et les **commentaires**, et une expression peut renvoyer
+  un nombre, une chaîne ou un booléen au lieu d'un ensemble de nœuds.
+
+  Dans un document HTML, les noms d'éléments s'écrivent en minuscules (`//button`) et n'ont pas besoin de
+  préfixe d'espace de noms.
+entrees:
+  - id: absolu
+    titre: /
+    syntaxe: /html/body/main/h1
+    resume: >-
+      Un chemin qui commence par `/` part de la racine du document, et chaque étape descend d'un niveau exactement.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#location-paths
+    exemples:
+      - selecteur: /html/body/main/h1
+        page: formulaire
+        attendu: { noeuds: [ h1 "Créer un compte" ] }
+    pieges:
+      - >-
+        C'est le type de chemin que génère « Copier le XPath complet » dans les DevTools : le moindre `div` ajouté par une refonte le casse. À éviter dans un test.
+
+  - id: descendant
+    titre: //
+    syntaxe: //balise
+    resume: >-
+      `//` cherche à n'importe quelle profondeur. En tête d'expression, il parcourt tout le document ; au milieu (`//form//input`), il cherche parmi les descendants de l'étape précédente. C'est un raccourci pour `/descendant-or-self::node()/`.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#path-abbrev
+    exemples:
+      - selecteur: //legend
+        page: formulaire
+        attendu: { noeuds: [ legend "Identité", legend "Sécurité", legend "Préférences" ] }
+      - selecteur: //form//button
+        page: panier
+        attendu: { noeuds: [ button "Appliquer" ] }
+
+  - id: point
+    titre: . et ..
+    syntaxe: . (nœud courant)   .. (parent)
+    resume: >-
+      `.` désigne le nœud courant, et `..` son parent. Dans un prédicat, `.` sert aussi à comparer le texte de l'élément (`//td[.='Paris']`).
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#path-abbrev
+    exemples:
+      - selecteur: //input[@id='email']/..
+        page: formulaire
+        attendu: { noeuds: [ div "Adresse e-mail Nous ne partage…" ] }
+
+  - id: joker
+    titre: '*'
+    syntaxe: '*'
+    resume: N'importe quel élément (mais pas un nœud texte ni un attribut).
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#node-tests
+    exemples:
+      - selecteur: //*[@id='panier']/*
+        page: panier
+        attendu: { noeuds: [ 'li "Dune 12,50 € Quantité Retirer"', 'li "Azul 29,90 € 39,90 € -25 % Qua…"', 'li "Fondation 8,00 € Plus disponib…"' ] }
+
+  - id: attribut
+    titre: '@attribut'
+    syntaxe: '@nom   @*'
+    resume: |
+      `@nom` sélectionne un **nœud attribut**. Dans un prédicat, il sert de filtre (`//input[@required]`) ;
+      en fin de chemin, il renvoie l'attribut lui-même, dont on peut lire la valeur. `@*` désigne tous les
+      attributs.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#path-abbrev
+    exemples:
+      - selecteur: //input[@required]
+        page: formulaire
+        attendu: { noeuds: [ input#prenom, input#nom, input#email, input#mot-de-passe, input#confirmation, 'input[name="cgu"]' ] }
+      - selecteur: //input[@id='email']/@placeholder
+        page: formulaire
+        attendu: { noeuds: [ '@placeholder="vous@exemple.fr"' ] }
+      - selecteur: //button[@data-testid]/@*
+        page: formulaire
+        attendu: { noeuds: [ '@type="submit"', '@class="btn btn--primaire"', '@data-testid="inscription-valider"' ] }
+
+  - id: text
+    titre: text()
+    syntaxe: //balise/text()
+    resume: |
+      Sélectionne les **nœuds texte** enfants directs. Dans un prédicat, `text()='...'` compare chaque nœud
+      texte séparément, alors que `.='...'` compare tout le texte de l'élément, descendants compris.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#node-tests
+    exemples:
+      - selecteur: //h1/text()
+        page: article
+        attendu: { noeuds: [ '#text "Bien choisir ses sélecteurs"' ] }
+      - selecteur: //td[text()='Bruno Petit']
+        page: tableau
+        note: aucun résultat, car la cellule contient un `strong` puis le texte « Petit ».
+        attendu: { noeuds: [] }
+      - selecteur: //td[.='Bruno Petit']
+        page: tableau
+        attendu: { noeuds: [ 'td "Bruno Petit" dans tr[data-id="u2"]' ] }
+    pieges:
+      - >-
+        Préférez `.` ou `normalize-space()` à `text()` pour comparer un texte visible : la moindre balise de mise en forme (`strong`, `em`, `span`) découpe le texte en plusieurs nœuds.
+
+  - id: node
+    titre: node()
+    syntaxe: node()
+    resume: >-
+      N'importe quel nœud enfant : élément, texte, commentaire...
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#node-tests
+    exemples:
+      - selecteur: //tr[@data-id='u2']/td[2]/node()
+        page: tableau
+        attendu: { noeuds: [ 'strong "Bruno" dans tr[data-id="u2"]', '#text "Petit"' ] }
+
+  - id: comment
+    titre: comment()
+    syntaxe: //comment()
+    resume: >-
+      Sélectionne les commentaires HTML (`<!-- ... -->`), invisibles pour CSS.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#node-tests
+    exemples:
+      - selecteur: //comment()
+        page: article
+        attendu: { noeuds: [ '#comment "TODO : ajouter une section sur…"' ] }
+
+  - id: union
+    titre: '|'
+    syntaxe: expression | expression
+    resume: >-
+      L'union de deux ensembles de nœuds, renvoyée dans l'ordre du document et sans doublon. C'est l'équivalent de la virgule en CSS.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#node-sets
+    exemples:
+      - selecteur: //legend | //h1
+        page: formulaire
+        attendu: { noeuds: [ h1 "Créer un compte", legend "Identité", legend "Sécurité", legend "Préférences" ] }

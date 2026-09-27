@@ -1,0 +1,82 @@
+---
+import Base from './Base.astro';
+import { langages, slugTheme, themesTries } from '../lib/reference';
+import { url } from '../lib/url';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+const themes = await themesTries();
+const courant = Astro.url.pathname;
+---
+
+<Base title={title} description={description}>
+  <div class="ref">
+    <aside class="ref__menu" aria-label="Sommaire de la Référence">
+      <div id="recherche" class="recherche" data-bundle={url('pagefind/')}></div>
+      <nav>
+        <a class:list={['ref__lien', { actif: courant === url('reference/') }]} href={url('reference/')}>Vue d'ensemble</a>
+        {langages.map((l) => (
+          <div class="ref__groupe">
+            <p class="ref__langage">{l.nom}</p>
+            <ul>
+              {themes
+                .filter((t) => t.data.langage === l.id)
+                .map((t) => {
+                  const href = url(`reference/${l.id}/${slugTheme(t)}/`);
+                  return (
+                    <li>
+                      <a class:list={['ref__lien', { actif: courant === href }]} href={href} aria-current={courant === href ? 'page' : undefined}>
+                        {t.data.titre}
+                      </a>
+                    </li>
+                  );
+                })}
+            </ul>
+          </div>
+        ))}
+        <div class="ref__groupe">
+          <p class="ref__langage">Comparer</p>
+          <ul>
+            <li>
+              <a class:list={['ref__lien', { actif: courant === url('reference/css-vs-xpath/') }]} href={url('reference/css-vs-xpath/')}>CSS vs XPath</a>
+            </li>
+            <li>
+              <a class="ref__lien" href={url('pages-exemple/')}>Pages d'exemple</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </aside>
+    <article class="ref__contenu" data-pagefind-body>
+      <slot />
+    </article>
+  </div>
+</Base>
+
+<script>
+  // Pagefind n'existe qu'après `npm run build` : en développement, la recherche est simplement absente.
+  const conteneur = document.getElementById('recherche');
+  const bundle = conteneur?.dataset.bundle;
+  if (conteneur && bundle) {
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = `${bundle}pagefind-ui.css`;
+    document.head.append(css);
+    const script = document.createElement('script');
+    script.src = `${bundle}pagefind-ui.js`;
+    script.onload = () => {
+      // @ts-expect-error PagefindUI est défini globalement par le script chargé.
+      new PagefindUI({
+        element: '#recherche',
+        showSubResults: true,
+        showImages: false,
+        translations: { placeholder: 'Rechercher dans la Référence' },
+      });
+    };
+    document.head.append(script);
+  }
+</script>

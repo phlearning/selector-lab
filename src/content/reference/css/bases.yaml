@@ -1,0 +1,95 @@
+titre: Sélecteurs de base
+langage: css
+ordre: 1
+intro: |
+  Les briques élémentaires : type, classe, identifiant, universel. Elles se combinent sans espace
+  pour former un **sélecteur composé** (`button.btn--danger`), et se séparent par une virgule pour
+  former une **liste** (`h1, h2`).
+
+  En test e2e, ces sélecteurs sont rapides et lisibles, mais les classes et la structure changent
+  souvent au gré des refontes : préférez des attributs stables (`data-testid`, `name`, `id` métier).
+entrees:
+  - id: type
+    titre: élément
+    syntaxe: balise
+    resume: Sélectionne les éléments par nom de balise. Insensible à la casse dans un document HTML.
+    bcd: css.selectors.type
+    exemples:
+      - selecteur: h2
+        page: panier
+        attendu: { noeuds: [ 'h2 "Dune" dans li[data-sku="LIV-001"]', 'h2 "Azul" dans li[data-sku="JEU-042"]', 'h2 "Fondation" dans li[data-sku="LIV-017"]', h2#titre-recap "Récapitulatif" ] }
+    pieges:
+      - >-
+        Trop large pour un test : `button` attrape tous les boutons de la page, y compris ceux ajoutés plus tard par une autre équipe.
+
+  - id: universel
+    titre: '*'
+    syntaxe: '*'
+    resume: Sélectionne tous les éléments. Utile surtout combiné à un combinateur (`#panier > *`).
+    bcd: css.selectors.universal
+    exemples:
+      - selecteur: '.actions > *'
+        page: formulaire
+        attendu: { noeuds: [ button "Effacer", button "Créer mon compte" ] }
+
+  - id: classe
+    titre: .classe
+    syntaxe: .nom-de-classe
+    resume: |
+      Sélectionne les éléments dont l'attribut `class` contient ce mot. L'ordre des classes n'a pas
+      d'importance, et plusieurs classes s'enchaînent sans espace (`.btn.btn--danger`).
+    bcd: css.selectors.class
+    exemples:
+      - selecteur: .badge--actif
+        page: tableau
+        attendu: { noeuds: [ 'span "Actif" dans tr[data-id="u1"]', 'span "Actif" dans tr[data-id="u2"]', 'span "Actif" dans tr[data-id="u4"]' ] }
+      - selecteur: .btn.btn--danger
+        page: tableau
+        attendu: { noeuds: [ 'button "Supprimer" dans tr[data-id="u1"]', 'button "Supprimer" dans tr[data-id="u2"]', 'button "Supprimer" dans tr[data-id="u3"]', 'button "Supprimer" dans tr[data-id="u4"]' ] }
+    pieges:
+      - >-
+        Les classes générées par les outils CSS-in-JS (`css-1x2y3z`, `sc-bdVaJa`) changent à chaque build : ne jamais les utiliser dans un test.
+      - '`.btn .btn--danger` (avec un espace) signifie « un `.btn--danger` à l''intérieur d''un `.btn` » : ce n''est pas du tout la même chose.'
+
+  - id: id
+    titre: '#id'
+    syntaxe: '#identifiant'
+    resume: |
+      Sélectionne l'élément dont l'attribut `id` vaut exactement cette valeur (sensible à la casse).
+      Un `id` devrait être unique dans la page, mais le navigateur ne l'impose pas.
+    bcd: css.selectors.id
+    exemples:
+      - selecteur: '#email'
+        page: formulaire
+        attendu: { noeuds: [ input#email ] }
+    pieges:
+      - >-
+        Un `id` qui commence par un chiffre (`#1er-choix`) est un sélecteur invalide : il faut l'échapper (`#\31 er-choix`), voir [CSS.escape()](../../dom/requetes/#css-escape), ou écrire `[id="1er-choix"]`.
+      - Les `id` générés automatiquement (`:r1:`, `ember123`) ne sont pas stables d'un rendu à l'autre.
+
+  - id: compose
+    titre: sélecteur composé
+    syntaxe: balise.classe#id[attribut]:pseudo-classe
+    resume: |
+      Des sélecteurs simples accolés, sans espace : l'élément doit satisfaire **toutes** les conditions.
+      Si un sélecteur de type (balise) est présent, il vient en premier.
+    exemples:
+      - selecteur: 'button.btn[data-action="supprimer"]:enabled'
+        page: tableau
+        attendu: { noeuds: [ 'button "Supprimer" dans tr[data-id="u2"]', 'button "Supprimer" dans tr[data-id="u3"]', 'button "Supprimer" dans tr[data-id="u4"]' ] }
+
+  - id: liste
+    titre: A, B
+    syntaxe: selecteur1, selecteur2
+    resume: |
+      Une liste de sélecteurs séparés par des virgules : un élément est retenu s'il correspond à
+      **au moins un** d'entre eux. Les résultats sont renvoyés dans l'ordre du document, pas dans
+      l'ordre de la liste.
+    bcd: css.selectors.list
+    exemples:
+      - selecteur: h2, h1
+        page: article
+        note: '`h1` arrive en premier dans le résultat, car il est avant les `h2` dans le document.'
+        attendu: { noeuds: [ h1 "Bien choisir ses sélecteurs", h2#pourquoi "Pourquoi c'est important", h2#strategies "Trois stratégies", h2#en-anglais "Et en anglais ?", h2#conclusion "Conclusion", h2 "Sommaire" ] }
+    pieges:
+      - Si un seul des sélecteurs de la liste est invalide, toute la liste est rejetée (`querySelectorAll` lève une erreur). Utilisez [:is()](../logiques/#is) pour une liste tolérante.

@@ -1,0 +1,25 @@
+---
+import Base from '../../layouts/Base.astro';
+import { documentHtml, pagesExemple, type PageExemple } from '../../lib/pagesExemple';
+
+export function getStaticPaths() {
+  return pagesExemple.map((page) => ({ params: { id: page.id }, props: { page } }));
+}
+
+const { page } = Astro.props as { page: PageExemple };
+---
+
+<Base title={page.titre}>
+  <h1>{page.titre}</h1>
+  <p>{page.description}</p>
+  <div class="page-exemple">
+    <section>
+      <h2>Rendu</h2>
+      <iframe class="page-exemple__rendu" title={`Rendu : ${page.titre}`} sandbox="" srcdoc={documentHtml(page)}></iframe>
+    </section>
+    <section>
+      <h2>Code HTML</h2>
+      <pre class="page-exemple__source"><code>{page.html}</code></pre>
+    </section>
+  </div>
+</Base>

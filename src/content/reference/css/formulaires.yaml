@@ -1,0 +1,131 @@
+titre: États de formulaire
+langage: css
+ordre: 6
+intro: |
+  Ces pseudo-classes reflètent l'**état courant** des champs, et pas seulement leurs attributs HTML :
+  `:checked` suit la case que l'utilisateur vient de cocher, alors que `[checked]` ne regarde que
+  l'état initial écrit dans le HTML. C'est une différence majeure avec XPath, qui ne voit que les attributs.
+entrees:
+  - id: checked
+    titre: ':checked'
+    resume: >-
+      Cases à cocher et boutons radio cochés, et aussi les `option` sélectionnées d'une liste déroulante.
+    bcd: css.selectors.checked
+    exemples:
+      - selecteur: 'input:checked'
+        page: formulaire
+        attendu: { noeuds: [ 'input[name="offre"]', 'input[name="newsletter"]' ] }
+      - selecteur: ':checked'
+        page: formulaire
+        note: sans préciser `input`, l'`option` sélectionnée « France » fait aussi partie du résultat.
+        attendu: { noeuds: [ option "France", 'input[name="offre"]', 'input[name="newsletter"]' ] }
+
+  - id: disabled
+    titre: ':disabled'
+    resume: >-
+      Éléments de formulaire désactivés, par leur attribut `disabled` ou parce qu'ils sont dans un `fieldset` désactivé.
+    bcd: css.selectors.disabled
+    exemples:
+      - selecteur: ':disabled'
+        page: tableau
+        attendu: { noeuds: [ 'button "Supprimer" dans tr[data-id="u1"]' ] }
+      - selecteur: 'input:disabled'
+        page: panier
+        attendu: { noeuds: [ 'input[name="quantite"] dans li[data-sku="LIV-017"]' ] }
+
+  - id: enabled
+    titre: ':enabled'
+    resume: Éléments de formulaire actifs, c'est-à-dire qui pourraient être désactivés mais ne le sont pas.
+    bcd: css.selectors.enabled
+    exemples:
+      - selecteur: 'button[data-action="supprimer"]:enabled'
+        page: tableau
+        attendu: { noeuds: [ 'button "Supprimer" dans tr[data-id="u2"]', 'button "Supprimer" dans tr[data-id="u3"]', 'button "Supprimer" dans tr[data-id="u4"]' ] }
+
+  - id: required
+    titre: ':required'
+    resume: Champs `input`, `select` et `textarea` portant l'attribut `required`.
+    bcd: css.selectors.required
+    exemples:
+      - selecteur: ':required'
+        page: formulaire
+        attendu: { noeuds: [ input#prenom, input#nom, input#email, input#mot-de-passe, input#confirmation, 'input[name="cgu"]' ] }
+
+  - id: optional
+    titre: ':optional'
+    resume: Champs `input`, `select` et `textarea` qui pourraient être obligatoires mais ne le sont pas.
+    bcd: css.selectors.optional
+    exemples:
+      - selecteur: '#inscription :is(input, select, textarea):optional'
+        page: formulaire
+        attendu: { noeuds: [ "input#telephone", "select#pays \"Choisir… France Belgique Suiss…\"", "input[name=\"offre\"]", "input[name=\"offre\"]", "input[name=\"offre\"]", "input[name=\"newsletter\"]", "input#code-parrain", "textarea#bio" ] }
+    pieges:
+      - >-
+        Divergence entre navigateurs : Chrome, Edge et Safari considèrent aussi les `button` comme `:optional`, Firefox non (il suit la spécification HTML). Un `#inscription :optional` renvoie donc 10 éléments dans Chromium et WebKit, mais 8 dans Firefox. Précisez toujours le type de champ.
+
+  - id: read-only
+    titre: ':read-only'
+    resume: >-
+      Éléments que l'utilisateur ne peut pas modifier. Attention, c'est **presque tout** : un paragraphe, une case à cocher ou un bouton radio sont « en lecture seule » au sens CSS.
+    bcd: css.selectors.read-only
+    exemples:
+      - selecteur: 'input:read-only'
+        page: formulaire
+        note: les cases et boutons radio en font partie, car l'attribut `readonly` ne s'applique pas à eux.
+        attendu: { noeuds: [ 'input[name="offre"]', 'input[name="offre"]', 'input[name="offre"]', 'input[name="newsletter"]', 'input[name="cgu"]', input#code-parrain ] }
+    pieges:
+      - >-
+        Pour cibler les champs texte marqués `readonly`, préférez l'attribut : `input[readonly]`.
+
+  - id: read-write
+    titre: ':read-write'
+    resume: >-
+      Éléments modifiables par l'utilisateur : champs texte non `readonly` et non désactivés, `textarea`, éléments `contenteditable`.
+    bcd: css.selectors.read-write
+    exemples:
+      - selecteur: '#inscription :read-write'
+        page: formulaire
+        attendu: { noeuds: [ input#prenom, input#nom, input#email, input#telephone, input#mot-de-passe, input#confirmation, textarea#bio ] }
+
+  - id: placeholder-shown
+    titre: ':placeholder-shown'
+    resume: >-
+      Champs dont le texte indicatif (`placeholder`) est affiché, c'est-à-dire qui ont un `placeholder` et sont vides. Pratique pour vérifier qu'un champ a bien été vidé.
+    bcd: css.selectors.placeholder-shown
+    exemples:
+      - selecteur: ':placeholder-shown'
+        page: formulaire
+        attendu: { noeuds: [ input#email, input#telephone, textarea#bio ] }
+
+  - id: valid-invalid
+    titre: ':valid / :invalid'
+    resume: >-
+      Champs dont la valeur respecte, ou non, leurs contraintes (`required`, `type="email"`, `minlength`...). Un `form` ou un `fieldset` est `:invalid` dès qu'un de ses champs l'est.
+    bcd: [ css.selectors.valid, css.selectors.invalid ]
+    exemples:
+      - selecteur: 'input:invalid'
+        page: formulaire
+        attendu: { noeuds: [ input#prenom, input#nom, input#email, input#mot-de-passe, input#confirmation, 'input[name="cgu"]' ] }
+      - selecteur: 'fieldset:invalid > legend'
+        page: formulaire
+        note: chaque `fieldset` contient au moins un champ obligatoire vide, ils sont donc tous invalides.
+        attendu: { noeuds: [ legend "Identité", legend "Sécurité", legend "Préférences" ] }
+    pieges:
+      - >-
+        `:invalid` s'applique dès le chargement, avant toute saisie. Pour ne cibler que les champs que l'utilisateur a touchés, utilisez [:user-invalid](#user-invalid).
+
+  - id: user-invalid
+    titre: ':user-invalid'
+    resume: >-
+      Comme `:invalid`, mais seulement après une interaction de l'utilisateur (saisie puis sortie du champ, ou tentative d'envoi). C'est ce qui correspond aux messages d'erreur réellement affichés.
+    bcd: css.selectors.user-invalid
+
+  - id: default
+    titre: ':default'
+    resume: >-
+      Éléments « par défaut » d'un groupe : cases et radios cochées dans le HTML, `option` sélectionnée par défaut, et premier bouton d'envoi du formulaire.
+    bcd: css.selectors.default
+    exemples:
+      - selecteur: '#inscription :default'
+        page: formulaire
+        attendu: { noeuds: [ option "France", 'input[name="offre"]', 'input[name="newsletter"]', button "Créer mon compte" ] }

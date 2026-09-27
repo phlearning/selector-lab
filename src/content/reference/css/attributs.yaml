@@ -1,0 +1,120 @@
+titre: Attributs
+langage: css
+ordre: 2
+intro: |
+  Les sélecteurs d'attribut sont les meilleurs alliés des tests e2e : `name`, `type`, `aria-label`,
+  `data-testid` ou `href` changent bien moins souvent que les classes ou la structure.
+
+  La valeur peut être écrite entre guillemets doubles, simples, ou sans guillemets si elle ne contient
+  que des lettres, chiffres, tirets et underscores (et ne commence pas par un chiffre).
+entrees:
+  - id: present
+    titre: '[attr]'
+    syntaxe: '[attribut]'
+    resume: >-
+      Éléments qui possèdent l'attribut, quelle que soit sa valeur (même vide).
+    bcd: css.selectors.attribute
+    exemples:
+      - selecteur: '[required]'
+        page: formulaire
+        attendu: { noeuds: [ input#prenom, input#nom, input#email, input#mot-de-passe, input#confirmation, 'input[name="cgu"]' ] }
+
+  - id: egal
+    titre: '[attr="valeur"]'
+    syntaxe: '[attribut="valeur"]'
+    resume: >-
+      Valeur exactement égale. C'est le sélecteur recommandé pour les attributs dédiés aux tests comme `data-testid`.
+    bcd: css.selectors.attribute
+    exemples:
+      - selecteur: '[data-testid="inscription-valider"]'
+        page: formulaire
+        attendu: { noeuds: [ button "Créer mon compte" ] }
+      - selecteur: 'input[type="radio"][value="pro"]'
+        page: formulaire
+        attendu: { noeuds: [ 'input[name="offre"]' ] }
+    pieges:
+      - >-
+        La comparaison porte sur la valeur de l'**attribut** dans le HTML, pas sur la propriété JavaScript : `input[value="2"]` ne suit pas ce que l'utilisateur tape dans le champ.
+
+  - id: mot
+    titre: '[attr~="mot"]'
+    syntaxe: '[attribut~="mot"]'
+    resume: >-
+      La valeur est une liste de mots séparés par des espaces, et l'un d'eux est exactement `mot`. C'est ce que fait `.classe` pour l'attribut `class`.
+    bcd: css.selectors.attribute
+    exemples:
+      - selecteur: '[class~="article--promo"]'
+        page: panier
+        attendu: { noeuds: [ 'li "Azul 29,90 € 39,90 € -25 % Qua…"' ] }
+
+  - id: commence
+    titre: '[attr^="début"]'
+    syntaxe: '[attribut^="début"]'
+    resume: La valeur commence par la chaîne donnée.
+    bcd: css.selectors.attribute
+    exemples:
+      - selecteur: 'a[href^="?page"]'
+        page: tableau
+        attendu: { noeuds: [ a "1", a "2", a "3", a "Suivant" ] }
+      - selecteur: '[data-sku^="LIV-"]'
+        page: panier
+        attendu: { noeuds: [ 'li "Dune 12,50 € Quantité Retirer"', 'li "Fondation 8,00 € Plus disponib…"' ] }
+
+  - id: finit
+    titre: '[attr$="fin"]'
+    syntaxe: '[attribut$="fin"]'
+    resume: La valeur se termine par la chaîne donnée.
+    bcd: css.selectors.attribute
+    exemples:
+      - selecteur: 'img[src$=".jpg"]'
+        page: panier
+        attendu: { noeuds: [ 'img dans li[data-sku="LIV-001"]', 'img dans li[data-sku="JEU-042"]', 'img dans li[data-sku="LIV-017"]' ] }
+
+  - id: contient
+    titre: '[attr*="partie"]'
+    syntaxe: '[attribut*="partie"]'
+    resume: La valeur contient la chaîne donnée, n'importe où.
+    bcd: css.selectors.attribute
+    exemples:
+      - selecteur: '[aria-label*="Chloé"]'
+        page: tableau
+        attendu: { noeuds: [ 'input dans tr[data-id="u3"]' ] }
+    pieges:
+      - >-
+        Correspondance de sous-chaîne brute : `[class*="btn"]` attrape aussi `btn--danger`, `btn--lien` ou une future classe `submit-btn-old`.
+
+  - id: prefixe-tiret
+    titre: '[attr|="langue"]'
+    syntaxe: '[attribut|="valeur"]'
+    resume: >-
+      La valeur est exactement `valeur`, ou commence par `valeur-`. Conçu pour les codes de langue : `[lang|="en"]` attrape `en` et `en-GB`.
+    bcd: css.selectors.attribute
+    exemples:
+      - selecteur: '[lang|="en"]'
+        page: article
+        attendu: { noeuds: [ p "A good selector describes what…", 'blockquote "Test the behaviour, not the im…"' ] }
+
+  - id: insensible-casse
+    titre: '[attr="valeur" i]'
+    syntaxe: '[attribut="valeur" i]'
+    resume: >-
+      Le modificateur `i` rend la comparaison de la valeur insensible à la casse (ASCII). Il fonctionne avec tous les opérateurs (`^=`, `*=`...).
+    bcd: css.selectors.attribute.case_insensitive_modifier
+    exemples:
+      - selecteur: 'input[name="motdepasse" i]'
+        page: formulaire
+        attendu: { noeuds: [ input#mot-de-passe ] }
+      - selecteur: 'input[name="motdepasse"]'
+        page: formulaire
+        note: sans le modificateur, `motDePasse` ne correspond pas.
+        attendu: { noeuds: [] }
+
+  - id: sensible-casse
+    titre: '[attr="valeur" s]'
+    syntaxe: '[attribut="valeur" s]'
+    resume: >-
+      Le modificateur `s` force une comparaison sensible à la casse, pour les quelques attributs HTML que le navigateur compare sans casse par défaut (comme `type`).
+    bcd: css.selectors.attribute.case_sensitive_modifier
+    pieges:
+      - >-
+        Support encore incomplet : vérifiez le tableau ci-dessous avant de l'utiliser.

@@ -1,0 +1,94 @@
+titre: Fonctions booléennes et numériques
+langage: xpath
+ordre: 6
+intro: |
+  Les dernières fonctions de XPath 1.0. Les nombres sont tous des flottants (double précision), et une
+  conversion ratée ne lève pas d'erreur : elle donne `NaN`.
+entrees:
+  - id: not
+    titre: not()
+    syntaxe: not(condition)
+    resume: >-
+      La négation. C'est une fonction, pas un opérateur : `[not(@disabled)]`, et non `[!@disabled]`.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-not
+    exemples:
+      - selecteur: //tbody/tr[not(.//button[@disabled])]
+        page: tableau
+        attendu: { noeuds: [ tr "Bruno Petit Lyon Éditeur Actif…", tr "Chloé Durand Paris Lecteur Sus…", tr "David Leroy Marseille Éditeur …", tr "Emma Moreau Lecteur En attente…" ] }
+
+  - id: boolean
+    titre: boolean()
+    syntaxe: boolean(objet)
+    resume: >-
+      Convertit en booléen. Un ensemble de nœuds est vrai s'il n'est pas vide : `boolean(//x)` répond à la question « cet élément existe-t-il ? ».
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-boolean
+    exemples:
+      - selecteur: boolean(//input[@disabled])
+        page: panier
+        attendu: { booleen: true }
+      - selecteur: boolean(//input[@disabled])
+        page: tableau
+        note: le seul élément désactivé du tableau est un `button`, pas un `input`.
+        attendu: { booleen: false }
+
+  - id: true-false
+    titre: true() / false()
+    resume: >-
+      Les constantes booléennes. XPath n'a pas de mots-clés `true` et `false` : écrit sans parenthèses, `true` serait lu comme un nom d'élément.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-true
+    exemples:
+      - selecteur: true()
+        page: article
+        attendu: { booleen: true }
+
+  - id: lang
+    titre: lang()
+    syntaxe: lang('code')
+    resume: >-
+      Vrai si la langue du nœud courant correspond au code. La spécification XPath 1.0 ne regarde que l'attribut `xml:lang` ; en HTML, préférez `ancestor-or-self::*[@lang][1]` ou le sélecteur CSS `:lang()`.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-lang
+    exemples:
+      - selecteur: //p[lang('en')]
+        page: article
+        note: aucun résultat, car l'attribut HTML `lang` n'est pas `xml:lang`.
+        attendu: { noeuds: [] }
+
+  - id: number
+    titre: number()
+    syntaxe: number(objet?)
+    resume: >-
+      Convertit en nombre. Seul le point est reconnu comme séparateur décimal ; tout le reste donne `NaN`.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-number
+    exemples:
+      - selecteur: number(//li[@data-sku='LIV-001']/@data-prix)
+        page: panier
+        attendu: { nombre: 12.5 }
+      - selecteur: string(number('12,50'))
+        page: panier
+        note: la virgule décimale n'est pas reconnue.
+        attendu: { chaine: "NaN" }
+
+  - id: sum
+    titre: sum()
+    syntaxe: sum(ensemble-de-nœuds)
+    resume: >-
+      La somme des valeurs numériques des nœuds. Si un seul nœud n'est pas un nombre, le résultat est `NaN`.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-sum
+    exemples:
+      - selecteur: sum(//li/@data-prix)
+        page: panier
+        attendu: { nombre: 50.4 }
+
+  - id: arrondis
+    titre: floor() / ceiling() / round()
+    syntaxe: floor(n)   ceiling(n)   round(n)
+    resume: >-
+      Arrondi inférieur, supérieur, et au plus proche. `round()` arrondit les demis vers l'infini positif : `round(2.5)` vaut 3, mais `round(-2.5)` vaut -2.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-round
+    exemples:
+      - selecteur: floor(sum(//li/@data-prix))
+        page: panier
+        attendu: { nombre: 50 }
+      - selecteur: round(-2.5)
+        page: panier
+        attendu: { nombre: -2 }

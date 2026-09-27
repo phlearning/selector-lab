@@ -1,0 +1,119 @@
+titre: Prédicats et opérateurs
+langage: xpath
+ordre: 3
+intro: |
+  Un **prédicat** entre crochets filtre les nœuds d'une étape. S'il contient un nombre, c'est une
+  **position** (`[2]`) ; sinon, c'est une condition convertie en booléen (`[@disabled]`, `[td='Paris']`).
+  Les prédicats s'enchaînent (`[a][b]`) et chacun filtre le résultat du précédent.
+entrees:
+  - id: position
+    titre: '[n]'
+    syntaxe: 'étape[2]   étape[last()]'
+    resume: >-
+      Garde le n-ième nœud **parmi ceux de l'étape**, en comptant à partir de 1. `[2]` est l'abréviation de `[position()=2]`.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#predicates
+    exemples:
+      - selecteur: //tbody/tr[2]
+        page: tableau
+        attendu: { noeuds: [ tr "Bruno Petit Lyon Éditeur Actif…" ] }
+      - selecteur: //tbody/tr[last()]
+        page: tableau
+        attendu: { noeuds: [ tr "Emma Moreau Lecteur En attente…" ] }
+
+  - id: parentheses
+    titre: '(chemin)[n]'
+    syntaxe: '(//balise)[1]'
+    resume: |
+      `//li[1]` signifie « chaque `li` qui est le premier `li` de **son parent** », et peut donc renvoyer
+      plusieurs nœuds. Pour obtenir « le premier `li` **de tout le document** », il faut d'abord
+      constituer l'ensemble entre parenthèses, puis le filtrer.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#node-sets
+    exemples:
+      - selecteur: //li[1]
+        page: panier
+        note: le premier `li` du menu de navigation, et le premier article du panier.
+        attendu: { noeuds: [ li "Livres", 'li "Dune 12,50 € Quantité Retirer"' ] }
+      - selecteur: (//li)[1]
+        page: panier
+        attendu: { noeuds: [ li "Livres" ] }
+    pieges:
+      - >-
+        C'est l'erreur XPath la plus fréquente en e2e : un test qui passait avec une seule liste dans la page se met à échouer (plusieurs résultats) le jour où une deuxième liste apparaît.
+
+  - id: ordre
+    titre: '[condition][n] vs [n][condition]'
+    resume: >-
+      Chaque prédicat filtre le résultat du précédent, et les positions sont recalculées après chaque filtre. L'ordre des prédicats change donc le sens de l'expression.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#predicates
+    exemples:
+      - selecteur: //tbody/tr[td[3]='Paris'][2]
+        page: tableau
+        note: la 2ᵉ ligne **parmi celles** dont la ville est Paris.
+        attendu: { noeuds: [ tr "Chloé Durand Paris Lecteur Sus…" ] }
+      - selecteur: //tbody/tr[2][td[3]='Paris']
+        page: tableau
+        note: la 2ᵉ ligne, **si** sa ville est Paris (ce n'est pas le cas).
+        attendu: { noeuds: [] }
+
+  - id: logiques
+    titre: and / or
+    syntaxe: '[condition and condition]   [condition or condition]'
+    resume: >-
+      Combine des conditions. `and` est prioritaire sur `or` ; ajoutez des parenthèses en cas de doute. La négation n'est pas un opérateur mais une fonction, [not()](../fonctions-booleennes/#not).
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#booleans
+    exemples:
+      - selecteur: //tbody/tr[td[3]='Paris' and td[4]='Lecteur']
+        page: tableau
+        attendu: { noeuds: [ tr "Chloé Durand Paris Lecteur Sus…" ] }
+      - selecteur: //input[@type='tel' or @type='email']
+        page: formulaire
+        attendu: { noeuds: [ input#email, input#telephone ] }
+
+  - id: comparaisons
+    titre: = != < <= > >=
+    syntaxe: '[@attribut = ''valeur'']   [nombre > 10]'
+    resume: |
+      Compare des valeurs. Les chaînes s'écrivent entre apostrophes ou guillemets. Avec `<` ou `>`, les deux
+      côtés sont convertis en nombres (avec un point décimal : `12.50`, pas `12,50`).
+
+      Lorsqu'un côté est un **ensemble de nœuds**, la comparaison est vraie si **au moins un** nœud la
+      satisfait.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#booleans
+    exemples:
+      - selecteur: //li[@data-prix > 10]
+        page: panier
+        attendu: { noeuds: [ 'li "Dune 12,50 € Quantité Retirer"', 'li "Azul 29,90 € 39,90 € -25 % Qua…"' ] }
+      - selecteur: //tbody/tr[td = 'Paris']
+        page: tableau
+        note: vrai dès qu'**une** cellule de la ligne vaut « Paris ».
+        attendu: { noeuds: [ tr "Alice Martin Paris Admin Actif…", tr "Chloé Durand Paris Lecteur Sus…" ] }
+    pieges:
+      - >-
+        `[td != 'Paris']` ne veut pas dire « aucune cellule ne vaut Paris » mais « au moins une cellule ne vaut pas Paris », ce qui est presque toujours vrai. Écrivez `[not(td = 'Paris')]`.
+
+  - id: difference-negation
+    titre: "!= vs not(=)"
+    resume: >-
+      L'illustration du piège précédent : les deux expressions semblent équivalentes, mais la première garde toutes les lignes.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#booleans
+    exemples:
+      - selecteur: //tbody/tr[td != 'Paris']
+        page: tableau
+        attendu: { noeuds: [ tr "Alice Martin Paris Admin Actif…", tr "Bruno Petit Lyon Éditeur Actif…", tr "Chloé Durand Paris Lecteur Sus…", tr "David Leroy Marseille Éditeur …", tr "Emma Moreau Lecteur En attente…" ] }
+      - selecteur: //tbody/tr[not(td = 'Paris')]
+        page: tableau
+        attendu: { noeuds: [ tr "Bruno Petit Lyon Éditeur Actif…", tr "David Leroy Marseille Éditeur …", tr "Emma Moreau Lecteur En attente…" ] }
+
+  - id: arithmetique
+    titre: + - * div mod
+    syntaxe: 'position() mod 2 = 0   sum(...) div count(...)'
+    resume: >-
+      Opérateurs arithmétiques. La division s'écrit `div` (car `/` sépare les étapes) et le reste de la division entière `mod`. Le `-` doit être entouré d'espaces, sinon il est lu comme faisant partie d'un nom.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#numbers
+    exemples:
+      - selecteur: //tbody/tr[position() mod 2 = 0]
+        page: tableau
+        attendu: { noeuds: [ tr "Bruno Petit Lyon Éditeur Actif…", tr "David Leroy Marseille Éditeur …" ] }
+      - selecteur: //tbody/tr[last() - 1]
+        page: tableau
+        attendu: { noeuds: [ tr "David Leroy Marseille Éditeur …" ] }

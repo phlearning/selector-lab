@@ -1,0 +1,145 @@
+titre: Fonctions sur les chaînes
+langage: xpath
+ordre: 5
+intro: |
+  Les fonctions de texte de XPath 1.0. C'est ici que XPath dépasse CSS pour les tests e2e : il peut
+  trouver un élément par son **texte visible**. Quand une fonction attend une chaîne et reçoit un ensemble
+  de nœuds, elle utilise le texte du **premier** nœud de l'ensemble.
+
+  XPath 1.0 n'a ni expressions régulières, ni `lower-case()`, ni `ends-with()` : voir
+  [Absent des navigateurs](../xpath-2/) pour les équivalents.
+entrees:
+  - id: string
+    titre: string()
+    syntaxe: string(objet?)
+    resume: >-
+      Convertit en chaîne. Pour un élément, c'est la concaténation de tous ses nœuds texte descendants ; pour un attribut, sa valeur. Sans argument, s'applique au nœud courant.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-string
+    exemples:
+      - selecteur: string(//h1)
+        page: article
+        attendu: { chaine: "Bien choisir ses sélecteurs" }
+      - selecteur: string(//input[@id='email']/@placeholder)
+        page: formulaire
+        attendu: { chaine: "vous@exemple.fr" }
+
+  - id: contains
+    titre: contains()
+    syntaxe: contains(chaîne, sous-chaîne)
+    resume: >-
+      Vrai si la première chaîne contient la seconde. Sensible à la casse et aux espaces.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-contains
+    exemples:
+      - selecteur: //button[contains(., 'Relancer')]
+        page: tableau
+        attendu: { noeuds: [ "button \"Relancer l'invitation\" dans tr[data-id=\"u5\"]" ] }
+      - selecteur: //*[contains(@class, 'btn')]
+        page: panier
+        note: identique à la classe exacte sur cette page, mais attraperait aussi un élément qui n'aurait que `btn--lien` ou `submit-btn-old`.
+        attendu: { noeuds: [ 'button "Retirer" dans li[data-sku="LIV-001"]', 'button "Retirer" dans li[data-sku="JEU-042"]', 'button "Retirer" dans li[data-sku="LIV-017"]', button#commander "Passer la commande" ] }
+    pieges:
+      - >-
+        `contains(@class, 'x')` est un test de sous-chaîne, pas de classe. Pour une classe exacte, voir la [recette dédiée](../recettes/#classe-exacte).
+
+  - id: starts-with
+    titre: starts-with()
+    syntaxe: starts-with(chaîne, début)
+    resume: Vrai si la chaîne commence par le début donné.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-starts-with
+    exemples:
+      - selecteur: //a[starts-with(@href, '/tags/')]
+        page: article
+        attendu: { noeuds: [ a "e2e", a "css", a "xpath" ] }
+
+  - id: normalize-space
+    titre: normalize-space()
+    syntaxe: normalize-space(chaîne?)
+    resume: >-
+      Supprime les espaces en début et en fin, et remplace chaque suite d'espaces, tabulations ou retours à la ligne par un seul espace. Indispensable pour comparer un texte extrait d'une page HTML indentée.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-normalize-space
+    exemples:
+      - selecteur: //td[. = 'Lyon']
+        page: tableau
+        note: aucun résultat, à cause des espaces autour de « Lyon » dans le HTML.
+        attendu: { noeuds: [] }
+      - selecteur: //td[normalize-space() = 'Lyon']
+        page: tableau
+        attendu: { noeuds: [ 'td "Lyon" dans tr[data-id="u2"]' ] }
+    pieges:
+      - >-
+        L'espace insécable (`&nbsp;`, U+00A0) n'est **pas** un espace pour XPath 1.0 : il n'est pas normalisé. Remplacez-le d'abord avec `translate()`, en insérant le caractère lui-même dans l'expression (en JavaScript : `` `translate(., '\u00A0', ' ')` `` dans une chaîne entre accents graves).
+
+  - id: concat
+    titre: concat()
+    syntaxe: concat(chaîne, chaîne, ...)
+    resume: >-
+      Concatène au moins deux chaînes. Sert aussi à écrire une chaîne contenant à la fois une apostrophe et des guillemets, impossible autrement en XPath 1.0.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-concat
+    exemples:
+      - selecteur: concat(//tr[@data-id='u1']/td[2], ' - ', //tr[@data-id='u1']/td[3])
+        page: tableau
+        attendu: { chaine: "Alice Martin - Paris" }
+
+  - id: substring-before
+    titre: substring-before()
+    syntaxe: substring-before(chaîne, séparateur)
+    resume: La partie de la chaîne avant la première occurrence du séparateur (chaîne vide s'il est absent).
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-substring-before
+    exemples:
+      - selecteur: substring-before(//time/@datetime, '-')
+        page: article
+        attendu: { chaine: "2026" }
+
+  - id: substring-after
+    titre: substring-after()
+    syntaxe: substring-after(chaîne, séparateur)
+    resume: La partie de la chaîne après la première occurrence du séparateur.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-substring-after
+    exemples:
+      - selecteur: substring-after(//li[@data-prix='29.90']/@data-sku, '-')
+        page: panier
+        attendu: { chaine: "042" }
+
+  - id: substring
+    titre: substring()
+    syntaxe: substring(chaîne, début, longueur?)
+    resume: >-
+      Extrait une portion de la chaîne. Le premier caractère est à la position **1**, pas 0.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-substring
+    exemples:
+      - selecteur: substring(//time/@datetime, 6, 2)
+        page: article
+        attendu: { chaine: "03" }
+
+  - id: string-length
+    titre: string-length()
+    syntaxe: string-length(chaîne?)
+    resume: Le nombre de caractères de la chaîne.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-string-length
+    exemples:
+      - selecteur: string-length(//h1)
+        page: article
+        attendu: { nombre: 27 }
+      - selecteur: //h2[string-length() > 20]
+        page: article
+        attendu: { noeuds: [ h2#pourquoi "Pourquoi c'est important" ] }
+
+  - id: translate
+    titre: translate()
+    syntaxe: translate(chaîne, caractères, remplacements)
+    resume: |
+      Remplace caractère par caractère : chaque caractère de la 2ᵉ chaîne est remplacé par celui de même
+      position dans la 3ᵉ, ou supprimé si la 3ᵉ est plus courte.
+
+      C'est l'outil de XPath 1.0 pour ignorer la casse ou supprimer des caractères.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-translate
+    exemples:
+      - selecteur: translate(//dd[@data-total='total'], ' €', '')
+        page: panier
+        attendu: { chaine: "54,90" }
+      - selecteur: //input[translate(@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz') = 'motdepasse']
+        page: formulaire
+        attendu: { noeuds: [ input#mot-de-passe ] }
+    pieges:
+      - >-
+        Les lettres accentuées ne sont pas couvertes par l'alphabet ASCII : ajoutez-les explicitement (`'ÉÈÀ'` et `'éèà'`) si le texte en contient.

@@ -1,0 +1,98 @@
+titre: Fonctions sur les nœuds
+langage: xpath
+ordre: 4
+intro: |
+  Les fonctions de XPath 1.0 qui portent sur des ensembles de nœuds. Utilisées seules, elles renvoient un
+  **nombre** ou une **chaîne** : c'est un Résultat typé que CSS ne sait pas produire.
+entrees:
+  - id: count
+    titre: count()
+    syntaxe: count(ensemble-de-nœuds)
+    resume: >-
+      Le nombre de nœuds de l'ensemble. Utile seul pour vérifier un nombre de lignes, ou dans un prédicat pour filtrer les éléments selon leur nombre d'enfants.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-count
+    exemples:
+      - selecteur: count(//tbody/tr)
+        page: tableau
+        attendu: { nombre: 5 }
+      - selecteur: count(//tbody/tr[td[3] = 'Paris'])
+        page: tableau
+        attendu: { nombre: 2 }
+      - selecteur: //tr[count(td) = 1]
+        page: tableau
+        note: la ligne de pied de tableau, qui n'a qu'une cellule fusionnée.
+        attendu: { noeuds: [ tr "Page 1 sur 3" ] }
+
+  - id: last
+    titre: last()
+    syntaxe: last()
+    resume: >-
+      La taille du contexte courant. Dans un prédicat, `[last()]` désigne le dernier nœud et `[last() - 1]` l'avant-dernier.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-last
+    exemples:
+      - selecteur: //ol/li[last()]
+        page: article
+        attendu: { noeuds: [ "li \"En dernier recours, s'appuyer …\"" ] }
+
+  - id: position
+    titre: position()
+    syntaxe: position()
+    resume: >-
+      La position du nœud dans le contexte courant, à partir de 1. Permet des plages de positions, que la syntaxe abrégée `[n]` ne sait pas exprimer.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-position
+    exemples:
+      - selecteur: //tbody/tr[position() <= 2]
+        page: tableau
+        attendu: { noeuds: [ tr "Alice Martin Paris Admin Actif…", tr "Bruno Petit Lyon Éditeur Actif…" ] }
+      - selecteur: //tbody/tr[position() > 1 and position() < last()]
+        page: tableau
+        attendu: { noeuds: [ tr "Bruno Petit Lyon Éditeur Actif…", tr "Chloé Durand Paris Lecteur Sus…", tr "David Leroy Marseille Éditeur …" ] }
+
+  - id: id
+    titre: id()
+    syntaxe: id('identifiant')   id('id1 id2')
+    resume: >-
+      Les éléments dont l'`id` figure dans la chaîne, qui peut en contenir plusieurs séparés par des espaces.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-id
+    exemples:
+      - selecteur: id('email')
+        page: formulaire
+        attendu: { noeuds: [ input#email ] }
+      - selecteur: id('prenom nom')
+        page: formulaire
+        attendu: { noeuds: [ input#prenom, input#nom ] }
+
+  - id: local-name
+    titre: local-name()
+    syntaxe: local-name(nœud?)
+    resume: >-
+      Le nom local du nœud, sans préfixe d'espace de noms. Sert à cibler des éléments SVG ou MathML intégrés dans une page HTML, que `//svg` ne trouve pas : `//*[local-name()='svg']`.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-local-name
+    exemples:
+      - selecteur: local-name(//ol/*[1])
+        page: article
+        attendu: { chaine: "li" }
+      - selecteur: //*[local-name() = 'dd']
+        page: panier
+        attendu: { noeuds: [ 'dd "54,90 €"', dd "Offerte", 'dd "54,90 €"' ] }
+
+  - id: name
+    titre: name()
+    syntaxe: name(nœud?)
+    resume: Le nom qualifié du nœud, préfixe compris s'il en a un.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-name
+    exemples:
+      - selecteur: name(//input[@id='email']/@*[1])
+        page: formulaire
+        attendu: { chaine: "id" }
+
+  - id: namespace-uri
+    titre: namespace-uri()
+    syntaxe: namespace-uri(nœud?)
+    resume: >-
+      L'URI d'espace de noms du nœud. Tous les éléments d'une page HTML sont dans l'espace de noms XHTML.
+    spec: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-namespace-uri
+    exemples:
+      - selecteur: namespace-uri(//h1)
+        page: article
+        attendu: { chaine: "http://www.w3.org/1999/xhtml" }

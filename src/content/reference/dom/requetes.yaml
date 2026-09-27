@@ -1,0 +1,153 @@
+titre: Requêtes CSS en JavaScript
+langage: dom
+ordre: 1
+intro: |
+  Les méthodes du DOM qui prennent un sélecteur CSS ou un identifiant. Ce sont elles qu'utilisent, sous le
+  capot, les frameworks e2e et les outils de test. Dans les Exemples, `document` désigne la Page d'exemple.
+entrees:
+  - id: query-selector
+    titre: querySelector()
+    syntaxe: document.querySelector(sélecteur)   élément.querySelector(sélecteur)
+    resume: >-
+      Le **premier** élément, dans l'ordre du document, qui correspond au sélecteur, ou `null`. Lève une `SyntaxError` si le sélecteur est invalide.
+    bcd: [ api.Document.querySelector, api.Element.querySelector ]
+    exemples:
+      - selecteur: document.querySelector('#inscription input')
+        page: formulaire
+        attendu: { noeuds: [ input#prenom ] }
+      - selecteur: document.querySelector('.introuvable')
+        page: formulaire
+        note: '`null`, affiché comme un résultat vide.'
+        attendu: { noeuds: [] }
+    pieges:
+      - >-
+        Un sélecteur qui trouve plusieurs éléments ne lève pas d'erreur : `querySelector` renvoie silencieusement le premier. Les locators Playwright, eux, échouent dans ce cas (mode strict).
+
+  - id: query-selector-all
+    titre: querySelectorAll()
+    syntaxe: document.querySelectorAll(sélecteur)
+    resume: >-
+      Tous les éléments correspondants, dans l'ordre du document, sous forme de `NodeList` **statique** : elle ne se met pas à jour si la page change ensuite.
+    bcd: [ api.Document.querySelectorAll, api.Element.querySelectorAll ]
+    exemples:
+      - selecteur: document.querySelectorAll('input[type=radio]')
+        page: formulaire
+        attendu: { noeuds: [ 'input[name="offre"]', 'input[name="offre"]', 'input[name="offre"]' ] }
+      - selecteur: document.querySelectorAll('li.article').length
+        page: panier
+        attendu: { nombre: 3 }
+
+  - id: portee
+    titre: élément.querySelectorAll() et :scope
+    syntaxe: élément.querySelectorAll(':scope > enfant')
+    resume: |
+      Appelée sur un élément, la méthode ne renvoie que ses descendants, **mais le sélecteur est évalué
+      sur tout le document**. `form.querySelectorAll('main p')` trouve les paragraphes du formulaire, même
+      si le `main` est à l'extérieur du formulaire.
+
+      Pour ancrer le sélecteur sur l'élément lui-même, commencez-le par `:scope`.
+    bcd: [ css.selectors.scope, css.selectors.scope.dom_api ]
+    exemples:
+      - selecteur: document.getElementById('inscription').querySelectorAll('main p')
+        page: formulaire
+        note: le `main` est un ancêtre du formulaire, et pourtant les paragraphes sont trouvés.
+        attendu: { noeuds: [ p#email-aide "Nous ne partagerons jamais vot…", p "12 caractères minimum.", p#titre-offre "Offre" ] }
+      - selecteur: document.getElementById('inscription').querySelectorAll(':scope main p')
+        page: formulaire
+        attendu: { noeuds: [] }
+      - selecteur: document.querySelector('.panier').querySelectorAll(':scope > li > button')
+        page: panier
+        attendu: { noeuds: [ 'button "Retirer" dans li[data-sku="LIV-001"]', 'button "Retirer" dans li[data-sku="JEU-042"]', 'button "Retirer" dans li[data-sku="LIV-017"]' ] }
+
+  - id: closest
+    titre: closest()
+    syntaxe: élément.closest(sélecteur)
+    resume: >-
+      Le plus proche ancêtre correspondant au sélecteur, **en commençant par l'élément lui-même**, ou `null`. L'équivalent de `ancestor-or-self::*[...][1]` en XPath.
+    bcd: api.Element.closest
+    exemples:
+      - selecteur: document.querySelector('#email').closest('fieldset')
+        page: formulaire
+        attendu: { noeuds: [ fieldset "Identité Prénom Nom Adresse e-…" ] }
+      - selecteur: document.querySelector('#email').closest('input')
+        page: formulaire
+        note: l'élément lui-même, car il correspond.
+        attendu: { noeuds: [ input#email ] }
+
+  - id: matches
+    titre: matches()
+    syntaxe: élément.matches(sélecteur)
+    resume: Vrai si l'élément correspond au sélecteur. Pratique pour vérifier un état (`:checked`, `:disabled`).
+    bcd: api.Element.matches
+    exemples:
+      - selecteur: document.querySelector('#email').matches(':required')
+        page: formulaire
+        attendu: { booleen: true }
+      - selecteur: "document.querySelector('[data-action=\"supprimer\"]').matches(':disabled')"
+        page: tableau
+        attendu: { booleen: true }
+
+  - id: get-element-by-id
+    titre: getElementById()
+    syntaxe: document.getElementById('identifiant')
+    resume: >-
+      L'élément dont l'`id` est exactement celui donné, ou `null`. Pas de sélecteur CSS : pas besoin d'échapper les caractères spéciaux.
+    bcd: api.Document.getElementById
+    exemples:
+      - selecteur: document.getElementById('mot-de-passe')
+        page: formulaire
+        attendu: { noeuds: [ input#mot-de-passe ] }
+
+  - id: get-elements-by-class-name
+    titre: getElementsByClassName()
+    syntaxe: document.getElementsByClassName('classe1 classe2')
+    resume: >-
+      Les éléments qui ont **toutes** les classes données, sous forme de `HTMLCollection` **vivante** : elle se met à jour automatiquement quand le DOM change.
+    bcd: api.Document.getElementsByClassName
+    exemples:
+      - selecteur: document.getElementsByClassName('btn btn--danger').length
+        page: tableau
+        attendu: { nombre: 4 }
+      - selecteur: "(() => { const liste = document.getElementsByClassName('article'); document.querySelector('.article--indisponible').remove(); return liste.length; })()"
+        page: panier
+        note: la collection vivante passe de 3 à 2 éléments après la suppression.
+        attendu: { nombre: 2 }
+      - selecteur: "(() => { const liste = document.querySelectorAll('.article'); document.querySelector('.article--indisponible').remove(); return liste.length; })()"
+        page: panier
+        note: la `NodeList` statique de `querySelectorAll` garde ses 3 éléments.
+        attendu: { nombre: 3 }
+
+  - id: get-elements-by-tag-name
+    titre: getElementsByTagName()
+    syntaxe: document.getElementsByTagName('balise')
+    resume: Les éléments de ce type, en `HTMLCollection` vivante. `'*'` renvoie tous les éléments.
+    bcd: api.Document.getElementsByTagName
+    exemples:
+      - selecteur: document.getElementsByTagName('h2')
+        page: panier
+        attendu: { noeuds: [ 'h2 "Dune" dans li[data-sku="LIV-001"]', 'h2 "Azul" dans li[data-sku="JEU-042"]', 'h2 "Fondation" dans li[data-sku="LIV-017"]', h2#titre-recap "Récapitulatif" ] }
+
+  - id: get-elements-by-name
+    titre: getElementsByName()
+    syntaxe: document.getElementsByName('nom')
+    resume: >-
+      Les éléments dont l'attribut `name` vaut la valeur donnée : typiquement, tous les boutons radio d'un groupe.
+    bcd: api.Document.getElementsByName
+    exemples:
+      - selecteur: document.getElementsByName('offre')
+        page: formulaire
+        attendu: { noeuds: [ 'input[name="offre"]', 'input[name="offre"]', 'input[name="offre"]' ] }
+
+  - id: css-escape
+    titre: CSS.escape()
+    syntaxe: CSS.escape(chaîne)
+    resume: >-
+      Échappe une chaîne pour l'insérer sans risque dans un sélecteur CSS : un `id` qui commence par un chiffre, contient `:` ou `.`, ou toute valeur venant des données de test.
+    bcd: api.CSS.escape_static
+    exemples:
+      - selecteur: CSS.escape('1er-choix')
+        page: formulaire
+        attendu: { chaine: "\\31 er-choix" }
+      - selecteur: "document.querySelector('#' + CSS.escape('mot-de-passe'))"
+        page: formulaire
+        attendu: { noeuds: [ input#mot-de-passe ] }

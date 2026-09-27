@@ -1,0 +1,85 @@
+titre: Pseudo-classes logiques
+langage: css
+ordre: 5
+intro: |
+  `:not()`, `:is()`, `:where()` et `:has()` prennent une **liste de sélecteurs** en argument. `:has()` a
+  changé la donne pour les tests e2e : c'est le premier sélecteur CSS capable de regarder **à l'intérieur**
+  d'un élément ou **après** lui pour décider s'il correspond. On peut enfin cibler « la ligne qui contient
+  le badge Suspendu » ou « le libellé qui précède le champ e-mail » sans XPath.
+entrees:
+  - id: not
+    titre: ':not(S)'
+    syntaxe: ':not(sélecteur, sélecteur...)'
+    resume: >-
+      Éléments qui ne correspondent à **aucun** des sélecteurs de la liste. Les listes complexes (`:not(.a, .b > p)`) sont acceptées depuis Selectors niveau 4.
+    bcd: [ css.selectors.not, css.selectors.not.selector_list ]
+    exemples:
+      - selecteur: 'tbody tr:not(.selectionnee)'
+        page: tableau
+        attendu: { noeuds: [ tr "Alice Martin Paris Admin Actif…", tr "Bruno Petit Lyon Éditeur Actif…", tr "David Leroy Marseille Éditeur …", tr "Emma Moreau Lecteur En attente…" ] }
+      - selecteur: '#inscription input:not([type="radio"], [type="checkbox"])'
+        page: formulaire
+        attendu: { noeuds: [ input#prenom, input#nom, input#email, input#telephone, input#mot-de-passe, input#confirmation, input#code-parrain ] }
+    pieges:
+      - >-
+        `:not()` seul est très large : `:not(.x)` attrape aussi `html`, `head`, `body`... Qualifiez-le toujours (`tr:not(.x)`).
+
+  - id: is
+    titre: ':is(S)'
+    syntaxe: ':is(sélecteur, sélecteur...)'
+    resume: |
+      Correspond si l'élément correspond à **l'un** des sélecteurs. Évite les répétitions :
+      `:is(h1, h2) + p` au lieu de `h1 + p, h2 + p`.
+
+      Contrairement à une liste classique, la liste est **tolérante** : un sélecteur invalide
+      ou inconnu est ignoré au lieu de rendre toute l'expression invalide.
+    bcd: [ css.selectors.is, css.selectors.is.forgiving_selector_list ]
+    exemples:
+      - selecteur: ':is(h1, h2) + p'
+        page: article
+        attendu: { noeuds: [ p "Publié le 14 mars 2026 par Cam…", p "Un test qui casse à chaque cha…", p "A good selector describes what…", p "Relisez vos sélecteurs comme d…" ] }
+      - selecteur: ':is(.article--promo, :unknown-pseudo) h2'
+        page: panier
+        note: '`:unknown-pseudo` est ignoré ; la même liste sans `:is()` lèverait une erreur.'
+        attendu: { noeuds: [ 'h2 "Azul" dans li[data-sku="JEU-042"]' ] }
+
+  - id: where
+    titre: ':where(S)'
+    syntaxe: ':where(sélecteur, sélecteur...)'
+    resume: >-
+      Identique à `:is()` pour la sélection. La seule différence concerne la spécificité en feuille de style (nulle pour `:where()`), ce qui n'a aucun effet sur `querySelectorAll` ou un test e2e.
+    bcd: css.selectors.where
+    exemples:
+      - selecteur: ':where(dt, dd)'
+        page: panier
+        attendu: { noeuds: [ dt "Sous-total", 'dd "54,90 €"', dt "Livraison", dd "Offerte", dt "Total", 'dd "54,90 €"' ] }
+
+  - id: has
+    titre: ':has(S)'
+    syntaxe: 'A:has(descendant) A:has(> enfant) A:has(+ frère-suivant) A:has(~ frères-suivants)'
+    resume: |
+      `A` correspond s'il existe, **relativement à A**, un élément qui correspond à l'argument.
+      Sans combinateur, l'argument cherche parmi les descendants ; avec `>`, `+` ou `~`, parmi les
+      enfants ou les frères suivants.
+
+      C'est ce qui permet de remonter à un parent (`tr:has(.badge--suspendu)`) ou à un frère
+      précédent (`label:has(+ #email)`).
+    bcd: css.selectors.has
+    exemples:
+      - selecteur: 'tr:has(.badge--suspendu)'
+        page: tableau
+        attendu: { noeuds: [ tr "Chloé Durand Paris Lecteur Sus…" ] }
+      - selecteur: 'label:has(+ #email)'
+        page: formulaire
+        attendu: { noeuds: [ label "Adresse e-mail" ] }
+      - selecteur: '.champ:has(> input:required)'
+        page: formulaire
+        attendu: { noeuds: [ div "Prénom", div "Nom", div "Adresse e-mail Nous ne partage…", div "Mot de passe 12 caractères min…", div "Confirmation" ] }
+      - selecteur: 'li.article:not(:has(input:disabled))'
+        page: panier
+        attendu: { noeuds: [ 'li "Dune 12,50 € Quantité Retirer"', 'li "Azul 29,90 € 39,90 € -25 % Qua…"' ] }
+    pieges:
+      - >-
+        `:has()` ne sait pas tester le **texte** : « la ligne qui contient Chloé » reste impossible en CSS pur. Il faut XPath (`//tr[td='Chloé Durand']`) ou le filtre `:has-text()` des frameworks e2e.
+      - >-
+        `:has()` ne peut pas être imbriqué dans un autre `:has()`, et n'accepte pas de pseudo-élément.

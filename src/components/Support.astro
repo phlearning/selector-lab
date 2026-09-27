@@ -1,0 +1,44 @@
+---
+import { support } from '../lib/support';
+
+interface Props {
+  cles: string[];
+}
+
+const donnees = Astro.props.cles.map(support);
+
+const dateFr = (iso?: string) => {
+  if (!iso) return '?';
+  const [annee, mois] = iso.replace('≤', '').split('-');
+  const nom = new Date(Date.UTC(Number(annee), Number(mois) - 1, 1)).toLocaleDateString('fr-FR', { month: 'long', timeZone: 'UTC' });
+  return `${iso.startsWith('≤') ? 'avant ' : ''}${nom} ${annee}`;
+};
+
+function baselineTexte(b: NonNullable<ReturnType<typeof support>['baseline']>): string {
+  if (b.statut === 'high') return `Baseline : largement disponible depuis ${dateFr(b.largementDepuis)}`;
+  if (b.statut === 'low') return `Baseline : récemment disponible depuis ${dateFr(b.depuis)}`;
+  return 'Baseline : pas encore disponible dans tous les navigateurs majeurs';
+}
+---
+
+{donnees.map((d) => (
+  <div class="support">
+    <div class="support__entete">
+      {d.description && <span class="support__desc" set:html={d.description} />}
+      {d.baseline && <span class:list={['baseline', `baseline--${d.baseline.statut || 'non'}`]}>{baselineTexte(d.baseline)}</span>}
+    </div>
+    <ul class="support__navigateurs">
+      {d.navigateurs.map((n) => (
+        <li class:list={['nav', n.version ? (n.partiel ? 'nav--partiel' : 'nav--oui') : 'nav--non']}>
+          <span class="nav__nom">{n.nom}</span>
+          <span class="nav__version">{n.version ? `${n.version}${n.partiel ? ' (partiel)' : ''}` : 'Non'}</span>
+        </li>
+      ))}
+    </ul>
+    <p class="support__source">
+      {d.mdnUrl && <a href={d.mdnUrl}>MDN</a>}
+      {d.specUrl && <> · <a href={d.specUrl}>Spécification</a></>}
+      · données <code>{d.cle}</code>
+    </p>
+  </div>
+))}

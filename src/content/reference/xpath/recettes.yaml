@@ -1,0 +1,96 @@
+titre: Recettes e2e
+langage: xpath
+ordre: 7
+intro: |
+  Des expressions XPath 1.0 prêtes à l'emploi pour les besoins les plus courants des tests e2e. Elles
+  combinent les axes, prédicats et fonctions des pages précédentes.
+entrees:
+  - id: classe-exacte
+    titre: une classe exacte
+    syntaxe: "//*[contains(concat(' ', normalize-space(@class), ' '), ' nom ')]"
+    resume: >-
+      L'équivalent XPath de `.nom` en CSS. Entourer l'attribut et le nom d'espaces évite que `btn` trouve aussi `btn--danger`.
+    exemples:
+      - selecteur: //*[contains(concat(' ', normalize-space(@class), ' '), ' btn ')]
+        page: panier
+        attendu: { noeuds: [ 'button "Retirer" dans li[data-sku="LIV-001"]', 'button "Retirer" dans li[data-sku="JEU-042"]', 'button "Retirer" dans li[data-sku="LIV-017"]', button#commander "Passer la commande" ] }
+
+  - id: texte-exact
+    titre: un élément par son texte
+    syntaxe: "//balise[normalize-space() = 'Texte visible']"
+    resume: >-
+      Le cas d'usage principal de XPath en e2e. `normalize-space()` sans argument prend tout le texte de l'élément, balises de mise en forme comprises, et ignore l'indentation.
+    exemples:
+      - selecteur: //button[normalize-space() = 'Passer la commande']
+        page: panier
+        attendu: { noeuds: [ button#commander "Passer la commande" ] }
+      - selecteur: //td[normalize-space() = 'Bruno Petit']
+        page: tableau
+        attendu: { noeuds: [ 'td "Bruno Petit" dans tr[data-id="u2"]' ] }
+
+  - id: champ-par-label
+    titre: un champ par son libellé
+    syntaxe: "//input[@id = //label[normalize-space() = 'Libellé']/@for]"
+    resume: >-
+      Retrouve le champ associé à un `label for="..."`. C'est ce que fait `getByLabel()` dans Playwright ou Testing Library, qui gèrent en plus les autres façons d'associer un libellé.
+    exemples:
+      - selecteur: //input[@id = //label[normalize-space() = 'Adresse e-mail']/@for]
+        page: formulaire
+        attendu: { noeuds: [ input#email ] }
+      - selecteur: //label[contains(., 'Recevoir la newsletter')]//input
+        page: formulaire
+        note: quand le champ est à l'intérieur de son `label`.
+        attendu: { noeuds: [ 'input[name="newsletter"]' ] }
+
+  - id: action-de-ligne
+    titre: une action dans la ligne qui contient un texte
+    syntaxe: "//tr[td[normalize-space() = 'Texte']]//button[normalize-space() = 'Action']"
+    resume: >-
+      Le scénario classique d'un tableau d'administration : « supprimer l'utilisateur Chloé Durand ». On trouve la ligne par le texte d'une cellule, puis le bouton à l'intérieur de cette ligne.
+    exemples:
+      - selecteur: //tr[td[normalize-space() = 'Chloé Durand']]//button[normalize-space() = 'Supprimer']
+        page: tableau
+        attendu: { noeuds: [ 'button "Supprimer" dans tr[data-id="u3"]' ] }
+
+  - id: cellule-par-colonne
+    titre: une cellule par le nom de sa colonne
+    syntaxe: "td[count(//thead//th[normalize-space() = 'Colonne']/preceding-sibling::th) + 1]"
+    resume: >-
+      Plutôt que d'écrire `td[3]` en dur, on calcule la position de la colonne à partir de son en-tête : le test survit à l'ajout ou au déplacement d'une colonne.
+    exemples:
+      - selecteur: //tr[@data-id='u3']/td[count(//thead//th[normalize-space() = 'Ville']/preceding-sibling::th) + 1]
+        page: tableau
+        attendu: { noeuds: [ 'td "Paris" dans tr[data-id="u3"]' ] }
+
+  - id: valeur-associee
+    titre: la valeur associée à un intitulé
+    syntaxe: "//dt[normalize-space() = 'Intitulé']/following-sibling::dd[1]"
+    resume: >-
+      Pour les listes de définitions et les fiches « intitulé : valeur ». Avec un tableau à deux colonnes, le même principe s'écrit `//th[.='Intitulé']/following-sibling::td[1]`.
+    exemples:
+      - selecteur: //dt[normalize-space() = 'Total']/following-sibling::dd[1]
+        page: panier
+        attendu: { noeuds: [ 'dd "54,90 €"' ] }
+
+  - id: insensible-casse
+    titre: un texte sans tenir compte de la casse
+    syntaxe: "//balise[contains(translate(., 'ABC...É', 'abc...é'), 'texte')]"
+    resume: >-
+      XPath 1.0 n'a pas de `lower-case()` : on passe le texte en minuscules avec `translate()`, en pensant aux lettres accentuées.
+    exemples:
+      - selecteur: //h2[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZÉÈÀ', 'abcdefghijklmnopqrstuvwxyzéèà'), 'récap')]
+        page: panier
+        attendu: { noeuds: [ h2#titre-recap "Récapitulatif" ] }
+
+  - id: apostrophe
+    titre: un texte qui contient une apostrophe
+    syntaxe: "//balise[. = \"texte avec l'apostrophe\"]"
+    resume: >-
+      Délimitez la chaîne par des guillemets si elle contient une apostrophe, et inversement. Si elle contient les deux, découpez-la avec `concat()`.
+    exemples:
+      - selecteur: //button[. = "Relancer l'invitation"]
+        page: tableau
+        attendu: { noeuds: [ "button \"Relancer l'invitation\" dans tr[data-id=\"u5\"]" ] }
+      - selecteur: //h2[. = concat('Pourquoi c', "'", 'est important')]
+        page: article
+        attendu: { noeuds: [ h2#pourquoi "Pourquoi c'est important" ] }

@@ -1,0 +1,100 @@
+titre: Absent des navigateurs (XPath 2.0+)
+langage: xpath
+ordre: 8
+intro: |
+  XPath 2.0 (2007) puis 3.1 (2017) ont ajouté des expressions régulières, des fonctions de casse, des
+  conditions et des boucles. **Aucun navigateur ne les implémente** : `document.evaluate()`, et donc
+  Playwright, Cypress ou Selenium lorsqu'ils interrogent la page, s'arrêtent à XPath 1.0.
+
+  Ces fonctions apparaissent pourtant dans de nombreux tutoriels et réponses générées. Chaque Exemple
+  ci-dessous est vérifié en CI : il **lève une erreur** dans Chromium, Firefox et WebKit. L'équivalent en
+  XPath 1.0 est indiqué à chaque fois.
+entrees:
+  - id: lower-case
+    titre: lower-case() / upper-case()
+    statut: absent
+    resume: |
+      Change la casse d'une chaîne. En XPath 1.0, utilisez [translate()](../fonctions-chaines/#translate) :
+
+      `translate(@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')`
+    spec: https://www.w3.org/TR/xpath-functions-31/#func-lower-case
+    exemples:
+      - selecteur: //input[lower-case(@name) = 'motdepasse']
+        page: formulaire
+        attendu: { erreur: true }
+
+  - id: ends-with
+    titre: ends-with()
+    statut: absent
+    resume: |
+      Teste la fin d'une chaîne. En XPath 1.0, comparez la fin avec [substring()](../fonctions-chaines/#substring) :
+
+      `substring(@src, string-length(@src) - string-length('.jpg') + 1) = '.jpg'`
+    spec: https://www.w3.org/TR/xpath-functions-31/#func-ends-with
+    exemples:
+      - selecteur: //img[ends-with(@src, '.jpg')]
+        page: panier
+        attendu: { erreur: true }
+      - selecteur: //img[substring(@src, string-length(@src) - 3) = '.jpg']
+        page: panier
+        note: l'équivalent XPath 1.0, qui fonctionne.
+        attendu: { noeuds: [ 'img dans li[data-sku="LIV-001"]', 'img dans li[data-sku="JEU-042"]', 'img dans li[data-sku="LIV-017"]' ] }
+
+  - id: matches
+    titre: matches() / replace() / tokenize()
+    statut: absent
+    resume: >-
+      Les expressions régulières. XPath 1.0 n'en a aucune : combinez `starts-with()`, `contains()`, `translate()` et `substring()`, ou filtrez les résultats en JavaScript.
+    spec: https://www.w3.org/TR/xpath-functions-31/#func-matches
+    exemples:
+      - selecteur: //a[matches(@href, '^\?page=\d+$')]
+        page: tableau
+        attendu: { erreur: true }
+      - selecteur: //a[starts-with(@href, '?page=')]
+        page: tableau
+        note: l'approximation XPath 1.0.
+        attendu: { noeuds: [ a "1", a "2", a "3", a "Suivant" ] }
+
+  - id: string-join
+    titre: string-join()
+    statut: absent
+    resume: >-
+      Joint une séquence de chaînes avec un séparateur. En XPath 1.0, une fonction ne peut pas parcourir un ensemble de nœuds : récupérez les nœuds et joignez-les en JavaScript.
+    spec: https://www.w3.org/TR/xpath-functions-31/#func-string-join
+    exemples:
+      - selecteur: string-join(//ol/li, ', ')
+        page: article
+        attendu: { erreur: true }
+
+  - id: exists
+    titre: exists() / empty()
+    statut: absent
+    resume: >-
+      Teste si une séquence est non vide ou vide. En XPath 1.0 : `boolean(...)` et `not(...)`.
+    spec: https://www.w3.org/TR/xpath-functions-31/#func-exists
+    exemples:
+      - selecteur: //tr[exists(.//button[@disabled])]
+        page: tableau
+        attendu: { erreur: true }
+
+  - id: if-some-every
+    titre: if / some / every / for
+    statut: absent
+    resume: >-
+      Conditions, quantificateurs et boucles. En XPath 1.0, `//tr[td = 'Paris']` joue déjà le rôle de « some » grâce à la comparaison d'ensembles, et `not(td != 'x')` celui de « every ».
+    spec: https://www.w3.org/TR/xpath-31/#id-quantified-expressions
+    exemples:
+      - selecteur: //tr[some $c in td satisfies $c = 'Paris']
+        page: tableau
+        attendu: { erreur: true }
+
+  - id: sequences
+    titre: (a, b) et étapes non-nœuds
+    statut: absent
+    resume: >-
+      Les séquences littérales et les étapes qui renvoient des valeurs (`//li/string()`) n'existent pas en XPath 1.0 : un chemin ne peut renvoyer que des nœuds.
+    spec: https://www.w3.org/TR/xpath-31/#id-sequence-expressions
+    exemples:
+      - selecteur: //ol/li/string()
+        page: article
+        attendu: { erreur: true }

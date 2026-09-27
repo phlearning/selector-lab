@@ -1,0 +1,153 @@
+titre: Pseudo-classes structurelles
+langage: css
+ordre: 4
+intro: |
+  Ces pseudo-classes sélectionnent un élément selon sa **position parmi ses frères**. La position se
+  compte à partir de 1, et porte sur l'élément lui-même : `li:first-child` signifie « un `li` qui est le
+  premier enfant de son parent », et non « le premier enfant d'un `li` ».
+
+  En test e2e, elles sont fragiles : ajouter une ligne ou une colonne décale tout. Réservez-les aux cas où
+  la position fait partie du comportement testé (« la première ligne est la plus récente »).
+entrees:
+  - id: first-child
+    titre: ':first-child'
+    resume: L'élément est le premier enfant de son parent.
+    bcd: css.selectors.first-child
+    exemples:
+      - selecteur: 'tbody tr:first-child'
+        page: tableau
+        attendu: { noeuds: [ tr "Alice Martin Paris Admin Actif…" ] }
+
+  - id: last-child
+    titre: ':last-child'
+    resume: L'élément est le dernier enfant de son parent.
+    bcd: css.selectors.last-child
+    exemples:
+      - selecteur: 'ol li:last-child'
+        page: article
+        attendu: { noeuds: [ "li \"En dernier recours, s'appuyer …\"" ] }
+
+  - id: only-child
+    titre: ':only-child'
+    resume: L'élément est l'unique enfant de son parent.
+    bcd: css.selectors.only-child
+    exemples:
+      - selecteur: 'td > :only-child'
+        page: tableau
+        note: le `strong` de « Bruno Petit » est retenu, car les nœuds texte ne comptent pas comme des enfants.
+        attendu: { noeuds: [ 'input dans tr[data-id="u1"]', 'span "Actif" dans tr[data-id="u1"]', 'input dans tr[data-id="u2"]', 'strong "Bruno" dans tr[data-id="u2"]', 'span "Actif" dans tr[data-id="u2"]', 'input dans tr[data-id="u3"]', 'span "Suspendu" dans tr[data-id="u3"]', 'input dans tr[data-id="u4"]', 'span "Actif" dans tr[data-id="u4"]', 'input dans tr[data-id="u5"]', 'span "En attente" dans tr[data-id="u5"]', "button \"Relancer l'invitation\" dans tr[data-id=\"u5\"]" ] }
+
+  - id: nth-child
+    titre: ':nth-child(An+B)'
+    syntaxe: ':nth-child(2) :nth-child(odd) :nth-child(even) :nth-child(3n+1) :nth-child(-n+3)'
+    resume: |
+      L'élément est à la position donnée par la formule `An+B`, pour `n` = 0, 1, 2... Les mots-clés `odd`
+      (impairs) et `even` (pairs) sont des raccourcis pour `2n+1` et `2n`. `-n+3` désigne les trois premiers.
+
+      Tous les frères sont comptés, **quel que soit leur type**.
+    bcd: css.selectors.nth-child
+    exemples:
+      - selecteur: 'tbody tr:nth-child(2)'
+        page: tableau
+        attendu: { noeuds: [ tr "Bruno Petit Lyon Éditeur Actif…" ] }
+      - selecteur: 'tbody tr:nth-child(even)'
+        page: tableau
+        attendu: { noeuds: [ tr "Bruno Petit Lyon Éditeur Actif…", tr "David Leroy Marseille Éditeur …" ] }
+      - selecteur: 'ol li:nth-child(-n+2)'
+        page: article
+        attendu: { noeuds: [ li "Cibler le rôle et le nom acces…", li "Utiliser un attribut dédié au …" ] }
+    pieges:
+      - >-
+        `p:nth-child(2)` ne veut pas dire « le 2ᵉ paragraphe » mais « un paragraphe qui est le 2ᵉ enfant ». Pour compter seulement les paragraphes, utilisez [:nth-of-type()](#nth-of-type).
+
+  - id: nth-child-of
+    titre: ':nth-child(An+B of S)'
+    syntaxe: ':nth-child(1 of .classe)'
+    resume: >-
+      Ne compte que les frères qui correspondent au sélecteur `S`. Par exemple, « la 2ᵉ ligne dont le statut est Actif », ce qu'aucun autre sélecteur CSS ne sait exprimer.
+    bcd: css.selectors.nth-child.of_syntax
+    exemples:
+      - selecteur: 'tbody tr:nth-child(2 of :has(.badge--actif))'
+        page: tableau
+        attendu: { noeuds: [ tr "Bruno Petit Lyon Éditeur Actif…" ] }
+
+  - id: nth-last-child
+    titre: ':nth-last-child(An+B)'
+    resume: Comme `:nth-child()`, mais en comptant à partir de la fin.
+    bcd: css.selectors.nth-last-child
+    exemples:
+      - selecteur: 'tbody tr:nth-last-child(2)'
+        page: tableau
+        attendu: { noeuds: [ tr "David Leroy Marseille Éditeur …" ] }
+
+  - id: nth-of-type
+    titre: ':nth-of-type(An+B)'
+    resume: >-
+      Position parmi les frères **du même type de balise** uniquement.
+    bcd: css.selectors.nth-of-type
+    exemples:
+      - selecteur: 'article > p:nth-of-type(2)'
+        page: article
+        attendu: { noeuds: [ p "Un test qui casse à chaque cha…" ] }
+      - selecteur: 'article > p:nth-child(2)'
+        page: article
+        note: renvoie le **premier** paragraphe, car il est le 2ᵉ enfant de l'article (juste après le `header`).
+        attendu: { noeuds: [ p "Un bon sélecteur survit aux re…" ] }
+
+  - id: nth-last-of-type
+    titre: ':nth-last-of-type(An+B)'
+    resume: Comme `:nth-of-type()`, en comptant à partir de la fin.
+    bcd: css.selectors.nth-last-of-type
+    exemples:
+      - selecteur: 'article > h2:nth-last-of-type(1)'
+        page: article
+        attendu: { noeuds: [ h2#conclusion "Conclusion" ] }
+
+  - id: first-of-type
+    titre: ':first-of-type'
+    resume: Le premier frère de son type. Équivaut à `:nth-of-type(1)`.
+    bcd: css.selectors.first-of-type
+    exemples:
+      - selecteur: 'article > h2:first-of-type'
+        page: article
+        attendu: { noeuds: [ h2#pourquoi "Pourquoi c'est important" ] }
+
+  - id: last-of-type
+    titre: ':last-of-type'
+    resume: Le dernier frère de son type.
+    bcd: css.selectors.last-of-type
+    exemples:
+      - selecteur: '.article__infos > p:last-of-type'
+        page: panier
+        attendu: { noeuds: [ 'p "12,50 €" dans li[data-sku="LIV-001"]', 'p "29,90 € 39,90 € -25 %" dans li[data-sku="JEU-042"]', 'p "Plus disponible" dans li[data-sku="LIV-017"]' ] }
+
+  - id: only-of-type
+    titre: ':only-of-type'
+    resume: L'unique frère de son type.
+    bcd: css.selectors.only-of-type
+    exemples:
+      - selecteur: 'article > ol:only-of-type'
+        page: article
+        attendu: { noeuds: [ ol "Cibler le rôle et le nom acces…" ] }
+
+  - id: empty
+    titre: ':empty'
+    resume: >-
+      L'élément n'a aucun enfant, ni élément ni texte. Les commentaires ne comptent pas, mais un simple espace ou un retour à la ligne, si.
+    bcd: css.selectors.empty
+    exemples:
+      - selecteur: 'td:empty'
+        page: tableau
+        attendu: { noeuds: [ 'td dans tr[data-id="u5"]' ] }
+      - selecteur: 'div:empty'
+        page: article
+        attendu: { noeuds: [ div#commentaires ] }
+    pieges:
+      - >-
+        `<td> </td>` n'est **pas** vide à cause de l'espace. Le sélecteur `:blank`, qui ignorerait les espaces, n'est implémenté par aucun navigateur.
+
+  - id: root
+    titre: ':root'
+    resume: >-
+      La racine du document : l'élément `html` dans une page HTML.
+    bcd: css.selectors.root

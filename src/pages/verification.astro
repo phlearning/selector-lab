@@ -1,0 +1,41 @@
+---
+// Page technique utilisée par les tests : elle expose le moteur d'évaluation du site
+// pour vérifier chaque Exemple dans Chromium, Firefox et WebKit.
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <title>Vérification</title>
+  </head>
+  <body>
+    <p>Page technique utilisée par les tests automatisés.</p>
+    <script>
+      import { documentHtml, pageExemple } from '../lib/pagesExemple';
+      import { evaluer, serialiser, type Langage } from '../lib/resultat';
+
+      const documents = new Map<string, Document>();
+      function documentDe(page: string): Document {
+        let doc = documents.get(page);
+        if (!doc) {
+          doc = new DOMParser().parseFromString(documentHtml(pageExemple(page)), 'text/html');
+          documents.set(page, doc);
+        }
+        return doc;
+      }
+
+      Object.assign(window, {
+        selectorLab: {
+          // Chaque évaluation part d'un document neuf : certains Exemples DOM modifient le document.
+          verifier(page: string, langage: Langage, selecteur: string) {
+            documents.delete(page);
+            return serialiser(evaluer(documentDe(page), langage, selecteur));
+          },
+        },
+      });
+      document.body.dataset.pret = 'oui';
+    </script>
+  </body>
+</html>

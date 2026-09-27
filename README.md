@@ -29,6 +29,21 @@ npm run build
 npm test
 ```
 
+## Contenu de la Référence
+
+Chaque page de la Référence est un fichier YAML dans `src/content/reference/<langage>/`, et la page
+« CSS vs XPath » est `src/content/comparaison.yaml`. Les Pages d'exemple sont dans `src/pages-exemple/`.
+
+Chaque Exemple déclare son Résultat typé attendu (`attendu`). Pour ajouter un Exemple :
+
+1. écrire le `selecteur` et la `page`, sans `attendu` ;
+2. lancer `npm run build && npm run attendus` : le script évalue l'Exemple dans Chromium et écrit le résultat ;
+3. **relire** le résultat écrit, puis `npm test` vérifie qu'il est identique dans Firefox et WebKit.
+
+`npm run verifier-contenu` signale les erreurs de syntaxe YAML et les pièges connus (un `#` sans guillemets
+est lu comme un commentaire). Le Support navigateur vient de `@mdn/browser-compat-data` et `web-features`,
+mis à jour avec les dépendances.
+
 ## Déploiement
 
 Chaque push sur `main` lance le build, les tests dans les trois moteurs, puis le déploiement sur GitHub Pages si tout passe.

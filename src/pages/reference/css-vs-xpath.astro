@@ -1,0 +1,55 @@
+---
+import { getCollection } from 'astro:content';
+import Resultat from '../../components/Resultat.astro';
+import Reference from '../../layouts/Reference.astro';
+import { mdInline } from '../../lib/markdown';
+import { pageExemple } from '../../lib/pagesExemple';
+import { url } from '../../lib/url';
+import source from '../../content/comparaison.yaml?raw';
+
+// Les collections ne gardent pas l'ordre du fichier : on le reprend depuis la source YAML.
+const ordre = [...source.matchAll(/^- id: (\S+)/gm)].map((m) => m[1]);
+const lignes = (await getCollection('comparaison')).sort((a, b) => ordre.indexOf(a.id) - ordre.indexOf(b.id));
+---
+
+<Reference title="CSS vs XPath">
+  <h1>CSS vs XPath</h1>
+  <p>
+    La même tâche écrite dans les deux langages. Quand les deux colonnes sont remplies, la CI vérifie qu'elles renvoient
+    exactement le même résultat. Une case vide signifie que le langage ne sait pas l'exprimer.
+  </p>
+  <div class="comparaison">
+    <table>
+      <colgroup>
+        <col class="col-tache" />
+        <col class="col-code" />
+        <col class="col-code" />
+        <col />
+      </colgroup>
+      <thead>
+        <tr>
+          <th scope="col">Tâche</th>
+          <th scope="col">CSS</th>
+          <th scope="col">XPath 1.0</th>
+          <th scope="col">Résultat</th>
+        </tr>
+      </thead>
+      <tbody>
+        {lignes.map(({ id, data }) => (
+          <tr id={id}>
+            <th scope="row">
+              <span set:html={mdInline(data.tache)} />
+              <small>
+                Sur <a href={url(`pages-exemple/${data.page}/`)}>{pageExemple(data.page).titre}</a>
+              </small>
+              {data.note && <small set:html={mdInline(data.note)} />}
+            </th>
+            <td>{data.css ? <code>{data.css}</code> : <span class="impossible">Impossible</span>}</td>
+            <td>{data.xpath ? <code>{data.xpath}</code> : <span class="impossible">Impossible</span>}</td>
+            <td><Resultat attendu={data.attendu} /></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</Reference>

@@ -1,0 +1,63 @@
+titre: Liens, langue et interaction
+langage: css
+ordre: 7
+intro: |
+  Des pseudo-classes qui dépendent du contexte : la langue, l'URL, ou ce que fait l'utilisateur avec
+  la souris et le clavier. Ces dernières sont délicates en test e2e, car leur état n'existe que pendant
+  l'interaction.
+entrees:
+  - id: lang
+    titre: ':lang(code)'
+    resume: >-
+      Éléments dont la langue, **héritée** de l'attribut `lang` le plus proche, correspond au code donné. `:lang(en)` attrape aussi `en-GB`. Différent de `[lang|="en"]`, qui ne voit que les éléments portant eux-mêmes l'attribut.
+    bcd: css.selectors.lang
+    exemples:
+      - selecteur: 'p:lang(en)'
+        page: article
+        attendu: { noeuds: [ p "A good selector describes what…", 'p "Test the behaviour, not the im…"' ] }
+      - selecteur: 'p[lang|="en"]'
+        page: article
+        note: le `p` à l'intérieur du `blockquote` hérite de sa langue mais ne porte pas l'attribut.
+        attendu: { noeuds: [ p "A good selector describes what…" ] }
+
+  - id: any-link
+    titre: ':any-link / :link'
+    resume: >-
+      Liens `a` et `area` qui ont un attribut `href`, visités ou non. `:link` se limite aux liens non visités, et `:visited` aux liens visités (très restreint pour des raisons de confidentialité).
+    bcd: [ css.selectors.any-link, css.selectors.link ]
+    exemples:
+      - selecteur: '.pagination :any-link'
+        page: tableau
+        attendu: { noeuds: [ a "1", a "2", a "3", a "Suivant" ] }
+    pieges:
+      - >-
+        `:visited` ne peut pas être détecté de façon fiable par JavaScript : n'écrivez pas de test qui en dépend.
+
+  - id: target
+    titre: ':target'
+    resume: >-
+      L'élément dont l'`id` correspond au fragment de l'URL (`#conclusion`). Utile pour vérifier qu'un lien d'ancre mène au bon endroit, mais ne correspond à rien si l'URL n'a pas de fragment.
+    bcd: css.selectors.target
+
+  - id: hover-focus
+    titre: ':hover / :focus / :focus-visible / :focus-within'
+    resume: |
+      États d'interaction : survol, focus, focus visible au clavier, et « un de mes descendants a le focus ».
+      Ils dépendent de la souris et du clavier réels.
+
+      En e2e, ne les utilisez pas pour **trouver** un élément : trouvez-le par son rôle ou un attribut, puis
+      vérifiez son état (par exemple `expect(locator).toBeFocused()` dans Playwright).
+    bcd: [ css.selectors.hover, css.selectors.focus, css.selectors.focus-visible, css.selectors.focus-within ]
+
+  - id: pseudo-elements
+    titre: '::before / ::after'
+    resume: >-
+      Les pseudo-éléments (`::before`, `::after`, `::placeholder`...) ne sont pas des nœuds du DOM : `querySelectorAll` ne les renvoie jamais. Pour lire leur contenu, il faut `getComputedStyle(element, '::before').content`.
+    bcd: [ css.selectors.before, css.selectors.after ]
+    exemples:
+      - selecteur: 'h2::before'
+        page: article
+        attendu: { noeuds: [] }
+    pieges:
+      - >-
+        Un texte ajouté par `content:` en CSS (« Obligatoire * ») n'apparaît ni dans `textContent`, ni dans les sélecteurs XPath de texte.

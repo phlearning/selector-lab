@@ -1,0 +1,42 @@
+---
+import Exemple from './Exemple.astro';
+import Support from './Support.astro';
+import { md, mdInline } from '../lib/markdown';
+import type { Entree } from '../lib/reference';
+
+interface Props {
+  entree: Entree;
+  langage: string;
+}
+
+const { entree, langage } = Astro.props;
+const cles = entree.bcd ? (Array.isArray(entree.bcd) ? entree.bcd : [entree.bcd]) : [];
+---
+
+<section class="entree" id={entree.id}>
+  <h2 class="entree__titre">
+    <a href={`#${entree.id}`}><code>{entree.titre}</code></a>
+    {entree.statut === 'absent' && <span class="pastille pastille--absent">Absent des navigateurs</span>}
+    {entree.statut === 'devtools' && <span class="pastille pastille--devtools">Console DevTools uniquement</span>}
+  </h2>
+  {entree.syntaxe && <pre class="entree__syntaxe"><code>{entree.syntaxe}</code></pre>}
+  <div class="entree__resume" set:html={md(entree.resume)} />
+
+  {entree.exemples.length > 0 && (
+    <div class="entree__exemples">
+      {entree.exemples.map((ex) => (
+        <Exemple {...ex} langage={ex.langage ?? langage} />
+      ))}
+    </div>
+  )}
+
+  {entree.pieges.length > 0 && (
+    <div class="pieges">
+      <h3>Pièges</h3>
+      <ul>{entree.pieges.map((p) => <li set:html={mdInline(p)} />)}</ul>
+    </div>
+  )}
+
+  {cles.length > 0 && <Support cles={cles} />}
+  {entree.spec && <p class="support__source"><a href={entree.spec}>Spécification</a></p>}
+</section>
