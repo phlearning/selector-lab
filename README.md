@@ -2,9 +2,9 @@
 
 Site statique pour apprendre, chercher et tester les sélecteurs utilisés en tests end-to-end : CSS, XPath 1.0, API DOM et requêtes ARIA, avec leur support dans chaque navigateur.
 
-- **Référence** : chaque fonctionnalité, ses exemples, ses pièges et son support navigateur.
+- **Référence** : CSS, XPath 1.0, API DOM et Requêtes ARIA : chaque fonctionnalité, ses exemples, ses pièges et son support navigateur.
 - **Testeur** : évaluer un sélecteur sur une page d'exemple ou sur son propre HTML.
-- **Jeu** : progresser niveau par niveau, en CSS ou en XPath, puis sur des scénarios e2e.
+- **Jeu** : progresser niveau par niveau dans une bibliothèque (CSS ou XPath), puis dans trois Scénarios e2e sur de vraies interfaces (CSS, XPath ou ARIA).
 - **Assistant** : un petit modèle de langage exécuté dans le navigateur, chargé à la demande (voir [ADR 0001](docs/adr/0001-assistant-local-a-la-demande.md)).
 
 Le vocabulaire du projet est défini dans [CONTEXT.md](CONTEXT.md).

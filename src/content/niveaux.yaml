@@ -634,3 +634,390 @@
     Bravo, tu as terminé la bibliothèque !
   reference: reference/xpath/fonctions-booleennes/#sum
   attendu: { nombre: 500 }
+
+# ---------- Scénario e2e : inscription (Page d'exemple « formulaire ») ----------
+
+- id: inscription-prenom
+  chapitre: formulaire
+  titre: Le champ Prénom
+  notion: Champ par son libellé
+  consigne: Ton test doit remplir le prénom. Cible le champ Prénom.
+  page: formulaire
+  solutions:
+    css: '#prenom'
+    xpath: //input[@id = //label[normalize-space() = 'Prénom']/@for]
+    aria: "getByLabelText('Prénom')"
+  recommande: aria
+  indices:
+    - Un utilisateur reconnaît ce champ grâce à son libellé, « Prénom ».
+    - En ARIA, une requête trouve un champ par le texte de son `label`. En CSS, le champ a un `id`.
+  lecon: |
+    `getByLabelText('Prénom')` (ou `getByRole('textbox', { name: 'Prénom' })`) décrit le champ comme
+    l'utilisateur le voit. `#prenom` fonctionne aussi, mais dépend d'un détail d'implémentation.
+  reference: reference/aria/autres/#get-by-label-text
+  attendu: { noeuds: [ "input#prenom" ] }
+
+- id: inscription-email
+  chapitre: formulaire
+  titre: L'adresse e-mail
+  notion: Rôle et nom accessible
+  consigne: Cible le champ de l'adresse e-mail.
+  page: formulaire
+  solutions:
+    css: input[type="email"]
+    xpath: //input[@type='email']
+    aria: "getByRole('textbox', { name: 'Adresse e-mail' })"
+  recommande: aria
+  indices:
+    - Un champ `type="email"` a le rôle ARIA `textbox`.
+    - >-
+      Son nom accessible vient de son `label` : « Adresse e-mail ».
+  lecon: |
+    `getByRole('textbox', { name: 'Adresse e-mail' })` : le rôle dit **ce que c'est**, le nom dit **lequel**.
+    Avec une chaîne, Testing Library exige le nom exact.
+  reference: reference/aria/roles/#name
+  attendu: { noeuds: [ "input#email" ] }
+
+- id: inscription-offre
+  chapitre: formulaire
+  titre: L'offre Pro
+  notion: Bouton radio
+  consigne: Ton test doit choisir l'offre Pro. Cible son bouton radio.
+  page: formulaire
+  solutions:
+    css: input[name="offre"][value="pro"]
+    xpath: //label[normalize-space() = 'Pro']/input
+    aria: "getByRole('radio', { name: 'Pro' })"
+  recommande: aria
+  indices:
+    - Le bouton radio est à l'intérieur de son `label`, dont le texte est « Pro ».
+    - En ARIA, le rôle d'un bouton radio est `radio`. En CSS, combine l'attribut `name` et l'attribut `value`.
+  lecon: |
+    Un `label` englobant donne son texte comme nom accessible au champ qu'il contient :
+    `getByRole('radio', { name: 'Pro' })`.
+  reference: reference/aria/roles/#roles-implicites
+  attendu: { noeuds: [ "input[name=\"offre\"]" ] }
+
+- id: inscription-cgu
+  chapitre: formulaire
+  titre: Les conditions d'utilisation
+  notion: Lien par son texte
+  consigne: Cible le lien vers les conditions d'utilisation.
+  page: formulaire
+  solutions:
+    css: a[href="/cgu"]
+    xpath: //a[normalize-space() = "conditions d'utilisation"]
+    aria: 'getByRole(''link'', { name: "conditions d''utilisation" })'
+  recommande: aria
+  indices:
+    - Le texte du lien est « conditions d'utilisation ».
+    - >-
+      Attention à l'apostrophe : délimite la chaîne par des guillemets `"..."`.
+  lecon: |
+    Quand un texte contient une apostrophe, délimitez-le par des guillemets, en XPath comme en JavaScript :
+    `getByRole('link', { name: "conditions d'utilisation" })`.
+  reference: reference/xpath/recettes/#apostrophe
+  attendu: { noeuds: [ "a \"conditions d'utilisation\"" ] }
+
+- id: inscription-mot-de-passe
+  chapitre: formulaire
+  titre: Le mot de passe
+  notion: Champ sans rôle
+  consigne: Cible le champ Mot de passe (pas sa confirmation).
+  page: formulaire
+  solutions:
+    css: '#mot-de-passe'
+    xpath: //input[@id = //label[normalize-space() = 'Mot de passe']/@for]
+    aria: "getByLabelText('Mot de passe')"
+  recommande: aria
+  indices:
+    - >-
+      Essaie `getByRole('textbox', ...)` : que se passe-t-il ?
+    - Un champ mot de passe n'a **aucun** rôle ARIA. Il faut une requête par libellé.
+  lecon: |
+    `input[type=password]` n'a pas de rôle : `getByRole` ne le trouve pas. `getByLabelText('Mot de passe')`
+    reste la requête orientée utilisateur.
+  reference: reference/aria/roles/#roles-implicites
+  attendu: { noeuds: [ "input#mot-de-passe" ] }
+
+- id: inscription-valider
+  chapitre: formulaire
+  titre: Envoyer le formulaire
+  notion: Bouton par son nom
+  consigne: Cible le bouton qui crée le compte.
+  page: formulaire
+  solutions:
+    css: '[data-testid="inscription-valider"]'
+    xpath: //button[normalize-space() = 'Créer mon compte']
+    aria: "getByRole('button', { name: 'Créer mon compte' })"
+  recommande: aria
+  indices:
+    - Le texte du bouton est « Créer mon compte ».
+    - Il porte aussi un attribut `data-testid`, prévu pour les tests.
+  lecon: |
+    `getByRole('button', { name: 'Créer mon compte' })` échouerait si le texte changeait : c'est voulu, car
+    l'utilisateur ne verrait plus le même bouton. `getByTestId('inscription-valider')` est le dernier recours.
+  reference: reference/aria/roles/#get-by-role
+  attendu: { noeuds: [ "button \"Créer mon compte\"" ] }
+
+# ---------- Scénario e2e : administration des utilisateurs (Page d'exemple « tableau ») ----------
+
+- id: admin-recherche
+  chapitre: tableau
+  titre: La recherche
+  notion: Champ de recherche
+  consigne: Ton test doit chercher un utilisateur. Cible le champ de recherche.
+  page: tableau
+  solutions:
+    css: '#recherche'
+    xpath: //input[@type='search']
+    aria: "getByRole('searchbox', { name: 'Rechercher un utilisateur' })"
+  recommande: aria
+  indices:
+    - Un champ `type="search"` n'a pas le rôle `textbox`.
+    - Son rôle est `searchbox`, et son nom vient de son `aria-label`.
+  lecon: |
+    `input[type=search]` a le rôle `searchbox`. Son nom vient de `aria-label` : sans libellé visible, c'est
+    lui que lit un lecteur d'écran.
+  reference: reference/aria/roles/#roles-implicites
+  attendu: { noeuds: [ "input#recherche" ] }
+
+- id: admin-lignes
+  chapitre: tableau
+  titre: Les utilisateurs
+  notion: Structure du tableau
+  consigne: Cible toutes les lignes d'utilisateurs, sans la ligne d'en-tête ni celle du pied de tableau.
+  page: tableau
+  solutions:
+    css: tbody tr
+    xpath: //tbody/tr
+    aria: null
+  recommande: css
+  indices:
+    - Les lignes d'utilisateurs sont dans le corps du tableau.
+    - Le corps d'un tableau est l'élément `tbody`.
+  lecon: |
+    Les rôles ARIA ne distinguent pas l'en-tête du corps d'un tableau (`getAllByRole('row')` renvoie aussi
+    les lignes d'en-tête et de pied). La structure reste le terrain de CSS : `tbody tr`.
+  reference: reference/aria/pratique/#limites
+  attendu: { noeuds: [ "tr \"Alice Martin Paris Admin Actif…\"", "tr \"Bruno Petit Lyon Éditeur Actif…\"", "tr \"Chloé Durand Paris Lecteur Sus…\"", "tr \"David Leroy Marseille Éditeur …\"", "tr \"Emma Moreau Lecteur En attente…\"" ] }
+
+- id: admin-supprimer-chloe
+  chapitre: tableau
+  titre: Supprimer Chloé Durand
+  notion: Action dans une ligne
+  consigne: Ton test doit supprimer l'utilisatrice Chloé Durand. Cible le bouton Supprimer de sa ligne.
+  page: tableau
+  solutions:
+    css: tr[data-id="u3"] button[data-action="supprimer"]
+    xpath: //tr[td[normalize-space() = 'Chloé Durand']]//button[normalize-space() = 'Supprimer']
+    aria: "getByRole('row', { name: /Chloé Durand/ }).getByRole('button', { name: 'Supprimer' })"
+  recommande: aria
+  indices:
+    - >-
+      Il y a un bouton Supprimer par ligne : il faut d'abord trouver la bonne ligne.
+    - Le nom accessible d'une ligne est tout son texte. Une expression régulière `/.../` permet d'en chercher une partie.
+    - En ARIA, enchaîne deux requêtes avec un point. En XPath, trouve la ligne par le texte d'une cellule.
+  lecon: |
+    `getByRole('row', { name: /Chloé Durand/ }).getByRole('button', { name: 'Supprimer' })` : on part du
+    conteneur, puis on cherche à l'intérieur. En CSS, il faut connaître l'identifiant technique `u3`, que le
+    test ne devrait pas avoir à deviner.
+  reference: reference/aria/pratique/#chainage
+  attendu: { noeuds: [ "button \"Supprimer\" dans tr[data-id=\"u3\"]" ] }
+
+- id: admin-case-bruno
+  chapitre: tableau
+  titre: Sélectionner Bruno Petit
+  notion: Case par son nom
+  consigne: Cible la case à cocher de la ligne de Bruno Petit.
+  page: tableau
+  solutions:
+    css: tr[data-id="u2"] input[type="checkbox"]
+    xpath: //tr[td[normalize-space() = 'Bruno Petit']]//input[@type='checkbox']
+    aria: "getByRole('checkbox', { name: 'Sélectionner Bruno Petit' })"
+  recommande: aria
+  indices:
+    - Chaque case porte un `aria-label` qui cite le nom de l'utilisateur.
+    - Le rôle d'une case est `checkbox`.
+  lecon: |
+    Un `aria-label` précis (« Sélectionner Bruno Petit ») rend chaque case unique : pas besoin de chaîner.
+  reference: reference/aria/roles/#nom-accessible
+  attendu: { noeuds: [ "input dans tr[data-id=\"u2\"]" ] }
+
+- id: admin-en-tetes
+  chapitre: tableau
+  titre: Les en-têtes de colonnes
+  notion: En-têtes de tableau
+  consigne: Cible les six en-têtes de colonnes du tableau.
+  page: tableau
+  solutions:
+    css: thead th
+    xpath: //thead//th
+    aria: "getAllByRole('columnheader')"
+  indices:
+    - Les en-têtes sont les `th` de l'en-tête du tableau.
+    - En ARIA, le rôle d'un en-tête de colonne est `columnheader`.
+  lecon: |
+    Un `th` a le rôle `columnheader` (ou `rowheader` s'il est en début de ligne). `getAllByRole` renvoie
+    plusieurs éléments sans lever d'erreur.
+  reference: reference/aria/roles/#roles-implicites
+  attendu: { noeuds: [ "th", "th \"Nom\"", "th \"Ville\"", "th \"Rôle\"", "th \"Statut\"", "th \"Actions\"" ] }
+
+- id: admin-page-suivante
+  chapitre: tableau
+  titre: Page suivante
+  notion: Lien par son nom
+  consigne: Cible le lien qui mène à la page suivante de la liste.
+  page: tableau
+  solutions:
+    css: a[rel="next"]
+    xpath: //a[normalize-space() = 'Suivant']
+    aria: "getByRole('link', { name: 'Suivant' })"
+  recommande: aria
+  indices:
+    - Le texte du lien est « Suivant ».
+    - En CSS, le lien porte l'attribut `rel="next"`.
+  lecon: |
+    Les liens de pagination « 2 » et « Suivant » pointent vers la même adresse : seul le nom les distingue.
+  reference: reference/aria/roles/#name
+  attendu: { noeuds: [ "a \"Suivant\"" ] }
+
+- id: admin-suspendus
+  chapitre: tableau
+  titre: Combien de suspendus ?
+  notion: Compter
+  consigne: Combien d'utilisateurs sont suspendus ? La réponse attendue est un nombre.
+  page: tableau
+  solutions:
+    css: null
+    xpath: count(//tbody/tr[.//span[normalize-space() = 'Suspendu']])
+    aria: null
+  indices:
+    - Il faut compter des lignes, en XPath.
+    - Une ligne suspendue contient un badge dont le texte est « Suspendu ».
+  lecon: |
+    `count()` vérifie directement un nombre de lignes. Dans Playwright, on écrirait plutôt
+    `expect(locator).toHaveCount(1)`.
+  reference: reference/xpath/fonctions-noeuds/#count
+  attendu: { nombre: 1 }
+
+# ---------- Scénario e2e : panier (Page d'exemple « panier ») ----------
+
+- id: panier-titre
+  chapitre: panier
+  titre: Le titre de la page
+  notion: Titre par niveau
+  consigne: Vérifie que tu es sur la bonne page. Cible le titre principal.
+  page: panier
+  solutions:
+    css: h1
+    xpath: //h1
+    aria: "getByRole('heading', { level: 1 })"
+  indices:
+    - Le titre principal est un `h1`.
+    - En ARIA, un titre a le rôle `heading`, et l'option `level` précise son niveau.
+  lecon: |
+    `getByRole('heading', { level: 1 })`, ou mieux `getByRole('heading', { name: 'Mon panier' })`, qui
+    vérifie en même temps le texte.
+  reference: reference/aria/roles/#level
+  attendu: { noeuds: [ "h1 \"Mon panier\"" ] }
+
+- id: panier-retirer-azul
+  chapitre: panier
+  titre: Retirer Azul
+  notion: Nom accessible et aria-label
+  consigne: Ton test doit retirer Azul du panier. Cible le bon bouton Retirer.
+  page: panier
+  solutions:
+    css: li[data-sku="JEU-042"] button
+    xpath: //li[.//h2[normalize-space() = 'Azul']]//button
+    aria: "getByRole('button', { name: 'Retirer Azul du panier' })"
+  recommande: aria
+  indices:
+    - Les trois boutons affichent le même texte, « Retirer ». Regarde leurs attributs.
+    - Chaque bouton a un `aria-label`, qui devient son nom accessible.
+  lecon: |
+    `aria-label` remplace le texte visible dans le nom accessible : « Retirer Azul du panier ». C'est ce
+    qui permet à un lecteur d'écran, et à un test, de distinguer les trois boutons.
+  reference: reference/aria/roles/#nom-accessible
+  attendu: { noeuds: [ "button \"Retirer\" dans li[data-sku=\"JEU-042\"]" ] }
+
+- id: panier-quantite-dune
+  chapitre: panier
+  titre: La quantité de Dune
+  notion: Limite des noms accessibles
+  consigne: Cible le champ Quantité de l'article Dune.
+  page: panier
+  solutions:
+    css: li[data-sku="LIV-001"] input[name="quantite"]
+    xpath: //li[.//h2[normalize-space() = 'Dune']]//input[@name='quantite']
+    aria: null
+  recommande: xpath
+  indices:
+    - >-
+      Les trois champs s'appellent tous « Quantité » : il faut partir de l'article.
+    - En XPath, trouve l'article par le titre qu'il contient, puis cherche le champ à l'intérieur.
+  lecon: |
+    Trois champs portent le même nom accessible, et un article (`listitem`) n'a pas de nom : aucune
+    requête ARIA ne les distingue. C'est un défaut d'accessibilité, qu'un `aria-label="Quantité de Dune"`
+    corrigerait.
+  reference: reference/aria/pratique/#limites
+  attendu: { noeuds: [ "input[name=\"quantite\"] dans li[data-sku=\"LIV-001\"]" ] }
+
+- id: panier-navigation
+  chapitre: panier
+  titre: Le lien Panier du menu
+  notion: Chaînage depuis un repère
+  consigne: Cible le lien Panier du menu de navigation principal.
+  page: panier
+  solutions:
+    css: nav a[aria-current="page"]
+    xpath: //nav[@aria-label='Principale']//a[starts-with(normalize-space(), 'Panier')]
+    aria: "getByRole('navigation', { name: 'Principale' }).getByRole('link', { name: /Panier/ })"
+  recommande: aria
+  indices:
+    - >-
+      Le nom du lien inclut le compteur d'articles : « Panier 3 ».
+    - Pars du repère de navigation nommé « Principale », puis cherche le lien avec une expression régulière.
+  lecon: |
+    Un repère nommé (`nav aria-label="Principale"`) est un excellent point de départ : il résiste à l'ajout
+    d'autres menus dans la page.
+  reference: reference/aria/roles/#reperes
+  attendu: { noeuds: [ "a \"Panier 3\"" ] }
+
+- id: panier-code-promo
+  chapitre: panier
+  titre: Le code promo
+  notion: Champ par son libellé
+  consigne: Ton test doit saisir un code promo. Cible le champ.
+  page: panier
+  solutions:
+    css: '#code'
+    xpath: //input[@id = //label[normalize-space() = 'Code promo']/@for]
+    aria: "getByRole('textbox', { name: 'Code promo' })"
+  recommande: aria
+  indices:
+    - Le champ a un libellé, « Code promo ».
+  lecon: |
+    `getByRole('textbox', { name: 'Code promo' })` et `getByLabelText('Code promo')` sont équivalents ici.
+  reference: reference/aria/autres/#get-by-label-text
+  attendu: { noeuds: [ "input#code" ] }
+
+- id: panier-indisponible
+  chapitre: panier
+  titre: Les articles indisponibles
+  notion: Conteneur par son texte
+  consigne: Cible les articles qui ne sont plus disponibles.
+  page: panier
+  solutions:
+    css: .article--indisponible
+    xpath: //li[.//p[normalize-space() = 'Plus disponible']]
+    aria: null
+  indices:
+    - L'article indisponible affiche la mention « Plus disponible ».
+    - En CSS, il porte une classe dédiée. En XPath, trouve le `li` qui contient cette mention.
+  lecon: |
+    La classe `article--indisponible` est pratique mais invisible pour l'utilisateur ; la version XPath
+    s'appuie sur le texte affiché. Bravo, tu as terminé les Scénarios e2e !
+  reference: reference/xpath/recettes/#texte-exact
+  attendu: { noeuds: [ "li \"Fondation 8,00 € Plus disponib…\"" ] }

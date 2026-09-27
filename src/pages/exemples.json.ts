@@ -26,10 +26,11 @@ export async function GET() {
     }
   }
   for (const { id, data } of await getCollection('niveaux')) {
-    for (const langage of ['css', 'xpath'] as const) {
+    for (const langage of ['css', 'xpath', 'aria'] as const) {
       const selecteur = data.solutions[langage];
       if (selecteur) {
-        exemples.push({ cle: `jeu#${id}/${langage}`, page: null, html: data.scene, langage, selecteur, attendu: data.attendu ?? null });
+        const cible = data.page ? { page: data.page } : { page: null, html: data.scene };
+        exemples.push({ cle: `jeu#${id}/${langage}`, ...cible, langage, selecteur, attendu: data.attendu ?? null });
       }
     }
   }

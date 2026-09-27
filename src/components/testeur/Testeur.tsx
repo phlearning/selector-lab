@@ -23,6 +23,7 @@ interface Props {
 const LANGAGES: { id: Langage; nom: string; indication: string }[] = [
   { id: 'css', nom: 'CSS', indication: 'tbody tr:has(.badge--suspendu)' },
   { id: 'xpath', nom: 'XPath 1.0', indication: "//tr[td='Paris']//button" },
+  { id: 'aria', nom: 'ARIA', indication: "getByRole('row', { name: /Chloé/ }).getByRole('button', { name: 'Supprimer' })" },
   { id: 'dom', nom: 'API DOM', indication: "document.querySelector('#email').closest('form')" },
 ];
 
@@ -99,7 +100,7 @@ export default function Testeur({ pages, base, liensReference }: Props) {
         analyse = null;
       }
     }
-    setEvaluation({ resultat, etiquettes, diagnostics: diagnostiquer(langage, selecteur, resultat), analyse });
+    setEvaluation({ resultat, etiquettes, diagnostics: diagnostiquer(langage, selecteur, resultat, doc), analyse });
   }, [pret, selecteur, langage, domAutorise, srcdoc]);
 
   useEffect(() => {
@@ -257,6 +258,8 @@ export default function Testeur({ pages, base, liensReference }: Props) {
           srcdoc={srcdoc}
           onLoad={(e) => {
             modifie.current = false;
+            // Un clic dans l'aperçu ne doit pas faire naviguer l'iframe hors du Document cible.
+            (e.currentTarget as HTMLIFrameElement).contentDocument?.addEventListener('click', (ev) => ev.preventDefault());
             setDocCharge((e.currentTarget as HTMLIFrameElement).getAttribute('srcdoc'));
           }}
         />

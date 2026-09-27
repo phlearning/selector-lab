@@ -20,14 +20,14 @@ test('chaque Exemple renvoie le Résultat typé attendu', async ({ page, request
 
   const obtenus = await page.evaluate(
     (liste) =>
-      liste.map((e) =>
+      Promise.all(liste.map((e) =>
         (window as unknown as { selectorLab: { verifier: (...a: (string | null | undefined)[]) => unknown } }).selectorLab.verifier(
           e.page,
           e.langage,
           e.selecteur,
           e.html,
         ),
-      ),
+      )),
     exemples,
   );
 

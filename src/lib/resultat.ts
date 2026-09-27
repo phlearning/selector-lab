@@ -3,7 +3,9 @@
  * Ce module tourne dans le navigateur : c'est le vrai moteur du navigateur qui évalue.
  */
 
-export type Langage = 'css' | 'xpath' | 'dom';
+import { evaluerAria } from './aria';
+
+export type Langage = 'css' | 'xpath' | 'dom' | 'aria';
 
 export type ResultatType =
   | { type: 'noeuds'; noeuds: Node[] }
@@ -112,6 +114,7 @@ function normaliserValeurDom(valeur: unknown): ResultatType {
 /**
  * Évalue un Sélecteur. Pour le langage `dom`, le Sélecteur est une expression JavaScript
  * où `document` désigne le Document cible (ex : `document.querySelector('#email').closest('form')`).
+ * Pour `aria`, c'est une Requête ARIA analysée par `aria.ts` : le document doit être affiché (iframe).
  */
 export function evaluer(doc: Document, langage: Langage, selecteur: string): ResultatType {
   try {
@@ -120,6 +123,8 @@ export function evaluer(doc: Document, langage: Langage, selecteur: string): Res
         return { type: 'noeuds', noeuds: Array.from(doc.querySelectorAll(selecteur)) };
       case 'xpath':
         return evaluerXPath(doc, selecteur);
+      case 'aria':
+        return { type: 'noeuds', noeuds: evaluerAria(doc, selecteur) };
       case 'dom': {
         const fn = new Function('document', `"use strict"; return (${selecteur});`);
         return normaliserValeurDom(fn(doc));

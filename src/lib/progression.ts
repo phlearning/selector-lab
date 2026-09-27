@@ -4,7 +4,7 @@
  */
 import type { Langage } from './resultat';
 
-export type Mode = Extract<Langage, 'css' | 'xpath'>;
+export type Mode = Extract<Langage, 'css' | 'xpath' | 'aria'>;
 
 export interface Progression {
   mode: Mode;
@@ -25,7 +25,7 @@ export function charger(): Progression {
     if (!brut) return progressionVide();
     const lu = JSON.parse(brut) as Partial<Progression>;
     return {
-      mode: lu.mode === 'xpath' ? 'xpath' : 'css',
+      mode: lu.mode === 'xpath' || lu.mode === 'aria' ? lu.mode : 'css',
       courant: typeof lu.courant === 'string' ? lu.courant : null,
       reussis: lu.reussis && typeof lu.reussis === 'object' ? lu.reussis : {},
       reponses: lu.reponses && typeof lu.reponses === 'object' ? lu.reponses : {},

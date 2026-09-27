@@ -17,27 +17,35 @@
       import { documentHtml, pageExemple } from '../lib/pagesExemple';
       import { evaluer, serialiser, type Langage } from '../lib/resultat';
 
-      const documents = new Map<string, Document>();
-      function documentDe(page: string): Document {
-        let doc = documents.get(page);
-        if (!doc) {
-          doc = new DOMParser().parseFromString(documentHtml(pageExemple(page)), 'text/html');
-          documents.set(page, doc);
-        }
-        return doc;
+      function htmlDe(page: string | null, html?: string): string {
+        return page === null ? envelopper(html ?? '', 'Niveau') : documentHtml(pageExemple(page));
+      }
+
+      /** Document affiché dans une iframe : nécessaire aux Requêtes ARIA (rôles, visibilité, noms). */
+      function documentAffiche(html: string): Promise<{ doc: Document; retirer: () => void }> {
+        return new Promise((resolve) => {
+          const iframe = document.createElement('iframe');
+          iframe.addEventListener('load', () => resolve({ doc: iframe.contentDocument!, retirer: () => iframe.remove() }), { once: true });
+          iframe.srcdoc = html;
+          document.body.append(iframe);
+        });
       }
 
       Object.assign(window, {
         selectorLab: {
           // Chaque évaluation part d'un document neuf : certains Exemples DOM modifient le document.
-          verifier(page: string | null, langage: Langage, selecteur: string, html?: string) {
-            // Scène d'un Niveau : document construit avec la même enveloppe que dans le Jeu.
-            if (page === null) {
-              const doc = new DOMParser().parseFromString(envelopper(html ?? '', 'Niveau'), 'text/html');
-              return serialiser(evaluer(doc, langage, selecteur));
+          async verifier(page: string | null, langage: Langage, selecteur: string, html?: string) {
+            const source = htmlDe(page, html);
+            if (langage === 'aria') {
+              const { doc, retirer } = await documentAffiche(source);
+              try {
+                return serialiser(evaluer(doc, langage, selecteur));
+              } finally {
+                retirer();
+              }
             }
-            documents.delete(page);
-            return serialiser(evaluer(documentDe(page), langage, selecteur));
+            const doc = new DOMParser().parseFromString(source, 'text/html');
+            return serialiser(evaluer(doc, langage, selecteur));
           },
         },
       });

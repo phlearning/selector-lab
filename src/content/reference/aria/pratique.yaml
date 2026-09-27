@@ -1,0 +1,83 @@
+titre: Chaînage et bonnes pratiques
+langage: aria
+ordre: 3
+intro: |
+  Comment combiner les requêtes, choisir la bonne variante, et ce qui change entre Testing Library et
+  Playwright.
+entrees:
+  - id: chainage
+    titre: requête.requête()
+    syntaxe: "getByRole('row', { name: /Chloé Durand/ }).getByRole('button', { name: 'Supprimer' })"
+    resume: |
+      Enchaîner deux requêtes cherche la seconde **à l'intérieur** de chaque résultat de la première. C'est la
+      syntaxe des locators de Playwright ; dans Testing Library, on écrirait
+      `within(screen.getByRole('row', ...)).getByRole('button', ...)`.
+
+      C'est la réponse ARIA au grand classique « le bouton Supprimer de la ligne de Chloé Durand ».
+    exemples:
+      - selecteur: "getByRole('row', { name: /Chloé Durand/ }).getByRole('button', { name: 'Supprimer' })"
+        page: tableau
+        attendu: { noeuds: [ "button \"Supprimer\" dans tr[data-id=\"u3\"]" ] }
+      - selecteur: "getByRole('navigation', { name: 'Principale' }).getAllByRole('link')"
+        page: panier
+        attendu: { noeuds: [ "a \"Livres\"", "a \"Jeux\"", "a \"Panier 3\"" ] }
+
+  - id: variantes
+    titre: getBy, getAllBy, queryBy, findBy
+    resume: |
+      Chaque requête existe en plusieurs variantes, qui diffèrent par ce qu'elles font quand le nombre de
+      résultats ne convient pas :
+
+      | Variante | 0 résultat | 1 résultat | plusieurs |
+      | --- | --- | --- | --- |
+      | `getBy...` | erreur | l'élément | erreur |
+      | `queryBy...` | `null` | l'élément | erreur |
+      | `getAllBy...` | erreur | tableau | tableau |
+      | `queryAllBy...` | `[]` | tableau | tableau |
+      | `findBy...` / `findAllBy...` | attend puis erreur | promesse | selon la variante |
+
+      Dans Selector Lab, toutes les variantes renvoient **tous** les éléments trouvés, et le Testeur signale
+      quand un `getBy` en trouverait plusieurs.
+    exemples:
+      - selecteur: "getByRole('button', { name: 'Supprimer' })"
+        page: tableau
+        note: quatre boutons, donc `getByRole` lèverait une erreur dans un vrai test.
+        attendu: { noeuds: [ "button \"Supprimer\" dans tr[data-id=\"u1\"]", "button \"Supprimer\" dans tr[data-id=\"u2\"]", "button \"Supprimer\" dans tr[data-id=\"u3\"]", "button \"Supprimer\" dans tr[data-id=\"u4\"]" ] }
+
+  - id: ecarts-playwright
+    titre: écarts avec Playwright
+    resume: |
+      Playwright calcule les rôles et les noms avec son propre moteur. Les résultats sont très proches de
+      Testing Library, avec une différence importante sur `name` :
+
+      - **Testing Library** : une chaîne doit correspondre **exactement** au nom.
+      - **Playwright** : une chaîne correspond si elle est **contenue** dans le nom, sans tenir compte de la
+        casse ; `exact: true` impose une correspondance exacte.
+
+      Même logique pour `getByText` : partiel par défaut dans Playwright, exact dans Testing Library.
+    exemples:
+      - selecteur: "getAllByRole('button', { name: 'retirer' })"
+        page: panier
+        note: rien ici, mais Playwright trouverait les trois boutons, dont le nom contient « Retirer ».
+        attendu: { noeuds: [] }
+      - selecteur: "getAllByRole('button', { name: /retirer/i })"
+        page: panier
+        note: l'expression régulière donne le comportement de Playwright.
+        attendu: { noeuds: [ "button \"Retirer\" dans li[data-sku=\"LIV-001\"]", "button \"Retirer\" dans li[data-sku=\"JEU-042\"]", "button \"Retirer\" dans li[data-sku=\"LIV-017\"]" ] }
+
+  - id: limites
+    titre: ce que les requêtes ARIA ne font pas
+    resume: |
+      - Pas de filtre sur la structure : « la 2ᵉ ligne », « le dernier article » restent du ressort de CSS ou XPath
+        (ou de `.nth()` dans Playwright).
+      - Pas de filtre `disabled` dans Testing Library : un bouton désactivé est trouvé comme les autres.
+      - Un élément sans nom distinctif (trois champs « Quantité » identiques) ne peut être désigné qu'en
+        partant de son conteneur, ou en améliorant le HTML (un `aria-label` précis).
+
+      Quand une requête ARIA est difficile à écrire, c'est souvent le signe d'un problème d'accessibilité dans
+      la page elle-même.
+    exemples:
+      - selecteur: "getAllByRole('spinbutton', { name: 'Quantité' })"
+        page: panier
+        note: trois champs portent le même nom, impossible de désigner celui de Dune par son seul nom.
+        attendu: { noeuds: [ "input[name=\"quantite\"] dans li[data-sku=\"LIV-001\"]", "input[name=\"quantite\"] dans li[data-sku=\"JEU-042\"]", "input[name=\"quantite\"] dans li[data-sku=\"LIV-017\"]" ] }

@@ -1,0 +1,143 @@
+titre: Requêtes par rôle
+langage: aria
+ordre: 1
+intro: |
+  Une **Requête ARIA** désigne un élément comme le perçoit un lecteur d'écran : par son **rôle**
+  (bouton, lien, case à cocher...) et son **nom accessible** (le texte qui le décrit). C'est la façon de
+  cibler recommandée par Playwright (`getByRole`) et Testing Library : un test écrit ainsi survit aux
+  refontes, et vérifie au passage que la page est accessible.
+
+  Ici, les requêtes sont évaluées par la bibliothèque **@testing-library/dom**, en JavaScript. Elles ne
+  dépendent donc pas du support d'un navigateur, mais leur comportement peut différer légèrement de celui de
+  Playwright : voir [les écarts avec Playwright](../pratique/#ecarts-playwright).
+entrees:
+  - id: get-by-role
+    titre: getByRole()
+    syntaxe: "getByRole('rôle', { name: 'nom accessible', ...options })"
+    resume: >-
+      Trouve les éléments d'un rôle ARIA, qu'il soit implicite (un `button` a le rôle `button`) ou déclaré avec l'attribut `role`. Les éléments cachés (`hidden`, `display: none`, `aria-hidden="true"`) sont exclus par défaut.
+    exemples:
+      - selecteur: "getByRole('button', { name: 'Créer mon compte' })"
+        page: formulaire
+        attendu: { noeuds: [ "button \"Créer mon compte\"" ] }
+      - selecteur: "getAllByRole('link')"
+        page: tableau
+        attendu: { noeuds: [ "a \"1\"", "a \"2\"", "a \"3\"", "a \"Suivant\"" ] }
+
+  - id: roles-implicites
+    titre: rôles implicites
+    resume: |
+      La plupart des balises HTML ont un rôle implicite. Les plus utiles en test :
+
+      | Balise | Rôle |
+      | --- | --- |
+      | `button`, `input[type=submit]` | `button` |
+      | `a[href]` | `link` |
+      | `input` texte, e-mail, téléphone, `textarea` | `textbox` |
+      | `input[type=search]` | `searchbox` |
+      | `input[type=number]` | `spinbutton` |
+      | `input[type=checkbox]`, `input[type=radio]` | `checkbox`, `radio` |
+      | `select` | `combobox` (ou `listbox`), et `option` |
+      | `h1` à `h6` | `heading` (avec `level`) |
+      | `ul`, `ol`, `li` | `list`, `listitem` |
+      | `table`, `tr`, `td`, `th` | `table`, `row`, `cell`, `columnheader` |
+      | `nav`, `main`, `section` nommée | `navigation`, `main`, `region` |
+      | `img[alt]` | `img` |
+    exemples:
+      - selecteur: "getAllByRole('textbox')"
+        page: formulaire
+        note: les champs mot de passe n'ont **aucun** rôle ARIA, ils ne sont donc pas dans le résultat.
+        attendu: { noeuds: [ "input#prenom", "input#nom", "input#email", "input#telephone", "input#code-parrain", "textarea#bio" ] }
+    pieges:
+      - >-
+        Un `input[type=password]` n'a pas de rôle : `getByRole('textbox', { name: 'Mot de passe' })` ne le trouve pas. Utilisez [getByLabelText()](../autres/#get-by-label-text).
+
+  - id: name
+    titre: '{ name }'
+    syntaxe: "{ name: 'texte exact' }   { name: /expression régulière/i }"
+    resume: |
+      Filtre sur le **nom accessible**. Avec une chaîne, Testing Library exige une correspondance
+      **exacte** (espaces normalisés). Avec une expression régulière, une correspondance partielle suffit,
+      et le drapeau `i` ignore la casse.
+    exemples:
+      - selecteur: "getAllByRole('button', { name: 'Supprimer' })"
+        page: tableau
+        attendu: { noeuds: [ "button \"Supprimer\" dans tr[data-id=\"u1\"]", "button \"Supprimer\" dans tr[data-id=\"u2\"]", "button \"Supprimer\" dans tr[data-id=\"u3\"]", "button \"Supprimer\" dans tr[data-id=\"u4\"]" ] }
+      - selecteur: "getByRole('link', { name: /suivant/i })"
+        page: tableau
+        attendu: { noeuds: [ "a \"Suivant\"" ] }
+      - selecteur: "getAllByRole('button', { name: 'Retirer' })"
+        page: panier
+        note: aucun résultat, car le nom accessible de ces boutons vient de leur `aria-label`, pas de leur texte.
+        attendu: { noeuds: [] }
+
+  - id: nom-accessible
+    titre: nom accessible
+    resume: |
+      Le navigateur calcule le nom d'un élément dans cet ordre de priorité :
+
+      1. `aria-labelledby` (le texte des éléments référencés) ;
+      2. `aria-label` ;
+      3. le libellé natif : `label` d'un champ, `alt` d'une image, `caption` d'un tableau, `legend` d'un `fieldset` ;
+      4. le **contenu** texte, pour les rôles qui l'autorisent (bouton, lien, cellule, titre...) ;
+      5. l'attribut `title`, en dernier recours.
+    exemples:
+      - selecteur: "getByRole('button', { name: 'Retirer Dune du panier' })"
+        page: panier
+        note: le texte visible est « Retirer », mais `aria-label` l'emporte.
+        attendu: { noeuds: [ "button \"Retirer\" dans li[data-sku=\"LIV-001\"]" ] }
+      - selecteur: "getByRole('radiogroup', { name: 'Offre' })"
+        page: formulaire
+        note: nommé par `aria-labelledby`, qui pointe vers le paragraphe « Offre ».
+        attendu: { noeuds: [ "div \"Offre Gratuite Pro Entreprise …\"" ] }
+      - selecteur: "getByRole('table', { name: '5 utilisateurs' })"
+        page: tableau
+        note: le nom d'un tableau vient de sa `caption`.
+        attendu: { noeuds: [ "table#utilisateurs \"5 utilisateurs Nom Ville Rôle …\"" ] }
+
+  - id: level
+    titre: '{ level }'
+    syntaxe: "getByRole('heading', { level: 2 })"
+    resume: Filtre les titres par niveau (`h1` = 1, `h2` = 2...).
+    exemples:
+      - selecteur: "getAllByRole('heading', { level: 2 })"
+        page: article
+        attendu: { noeuds: [ "h2#pourquoi \"Pourquoi c'est important\"", "h2#strategies \"Trois stratégies\"", "h2#en-anglais \"Et en anglais ?\"", "h2#conclusion \"Conclusion\"", "h2 \"Sommaire\"" ] }
+
+  - id: etats
+    titre: '{ checked } { selected } { pressed } { expanded }'
+    resume: >-
+      Filtrent sur l'état ARIA de l'élément : case cochée, option sélectionnée, bouton enfoncé, section dépliée. Contrairement à XPath, l'état courant est pris en compte, pas seulement l'attribut HTML initial.
+    exemples:
+      - selecteur: "getAllByRole('checkbox', { checked: true })"
+        page: tableau
+        attendu: { noeuds: [ "input dans tr[data-id=\"u3\"]" ] }
+      - selecteur: "getByRole('option', { selected: true })"
+        page: formulaire
+        attendu: { noeuds: [ "option \"France\"" ] }
+
+  - id: hidden
+    titre: '{ hidden: true }'
+    resume: >-
+      Inclut les éléments inaccessibles (cachés, `aria-hidden`), normalement exclus. Utile pour vérifier qu'un message d'erreur existe mais n'est pas encore affiché.
+    exemples:
+      - selecteur: "getAllByRole('alert')"
+        page: formulaire
+        note: 'la zone d''erreurs est cachée (`hidden`) : elle est exclue.'
+        attendu: { noeuds: [] }
+      - selecteur: "getAllByRole('alert', { hidden: true })"
+        page: formulaire
+        attendu: { noeuds: [ "div" ] }
+
+  - id: reperes
+    titre: régions et repères
+    syntaxe: "getByRole('navigation', { name: 'Pagination' })"
+    resume: >-
+      Les repères (`navigation`, `main`, `banner`, `contentinfo`, `region`...) découpent la page en zones. Nommés avec `aria-label` ou `aria-labelledby`, ils servent de point de départ pour [chaîner](../pratique/#chainage) une requête.
+    exemples:
+      - selecteur: "getByRole('navigation', { name: 'Pagination' })"
+        page: tableau
+        attendu: { noeuds: [ "nav \"1 2 3 Suivant\"" ] }
+      - selecteur: "getByRole('region', { name: 'Récapitulatif' })"
+        page: panier
+        attendu: { noeuds: [ "section \"Récapitulatif Sous-total 54,90…\"" ] }

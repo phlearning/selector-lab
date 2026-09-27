@@ -2,7 +2,7 @@ import { defineCollection } from 'astro:content';
 import { file, glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
-const langage = z.enum(['css', 'xpath', 'dom']);
+const langage = z.enum(['css', 'xpath', 'dom', 'aria']);
 const page = z.enum(['formulaire', 'tableau', 'panier', 'article']);
 
 /** Résultat typé attendu d'un Exemple (voir CONTEXT.md). */
@@ -59,18 +59,29 @@ const comparaison = defineCollection({
 
 const niveaux = defineCollection({
   loader: file('./src/content/niveaux.yaml'),
-  schema: z.object({
-    chapitre: z.enum(['bibliotheque']),
-    titre: z.string(),
-    notion: z.string(),
-    consigne: z.string(),
-    scene: z.string(),
-    solutions: z.object({ css: z.string().nullable(), xpath: z.string() }),
-    indices: z.array(z.string()).min(1),
-    lecon: z.string(),
-    reference: z.string(),
-    attendu: attendu.optional(),
-  }),
+  schema: z
+    .object({
+      chapitre: z.enum(['bibliotheque', 'formulaire', 'tableau', 'panier']),
+      titre: z.string(),
+      notion: z.string(),
+      consigne: z.string(),
+      /** Scène dessinée (bibliothèque) ou Page d'exemple (Scénarios e2e). */
+      scene: z.string().optional(),
+      page: page.optional(),
+      solutions: z.object({
+        css: z.string().nullable(),
+        xpath: z.string().nullable(),
+        aria: z.string().nullable().default(null),
+      }),
+      /** Mode conseillé en e2e pour ce Niveau. */
+      recommande: z.enum(['css', 'xpath', 'aria']).optional(),
+      indices: z.array(z.string()).min(1),
+      lecon: z.string(),
+      reference: z.string(),
+      attendu: attendu.optional(),
+    })
+    .refine((n) => (n.scene === undefined) !== (n.page === undefined), { message: 'Un Niveau a soit une scene, soit une page.' })
+    .refine((n) => n.solutions.css || n.solutions.xpath || n.solutions.aria, { message: 'Au moins une solution est requise.' }),
 });
 
 export const collections = { reference, comparaison, niveaux };

@@ -75,14 +75,38 @@ marque-page[couleur="vert"] { background: #059669; }
 }
 `;
 
+/**
+ * Scénarios e2e : la Page d'exemple garde son rendu par défaut. Les cibles clignotent (ombre) au lieu de
+ * sauter, ce qui fonctionne aussi sur les lignes de tableau ; le contour reste libre pour les nœuds trouvés.
+ */
+const STYLE_SCENARIO = `
+html { background: #fff; color: #111; color-scheme: light; }
+body { margin: 16px; font-family: system-ui, sans-serif; line-height: 1.45; }
+img { width: 48px; height: 48px; background: #e5e7eb; }
+[data-jeu-cible] { animation: cible 0.9s ease-in-out infinite alternate; }
+[data-jeu-trouve] { outline: 3px dashed #0f766e; outline-offset: 3px; }
+[data-jeu-survol] { background-color: rgb(245 158 11 / 0.25) !important; }
+[data-jeu-reussi] { box-shadow: 0 0 0 4px #16a34a; background-color: rgb(22 163 74 / 0.15) !important; transition: all 0.4s; }
+@keyframes cible { from { box-shadow: 0 0 0 2px rgb(245 158 11 / 0.4); } to { box-shadow: 0 0 0 5px #f59e0b; } }
+@media (prefers-reduced-motion: reduce) {
+  [data-jeu-cible] { animation: none; box-shadow: 0 0 0 4px #f59e0b; }
+}
+`;
+
 /** Applique le style de la Scène sans modifier le DOM du document. */
-export function styler(doc: Document): void {
+export function styler(doc: Document, scenario = false): void {
   const fenetre = doc.defaultView as (Window & typeof globalThis) | null;
   if (!fenetre) return;
   // La feuille doit être construite dans le contexte de l'iframe pour pouvoir y être adoptée.
   const feuille = new fenetre.CSSStyleSheet();
-  feuille.replaceSync(STYLE_SCENE);
+  feuille.replaceSync(scenario ? STYLE_SCENARIO : STYLE_SCENE);
   doc.adoptedStyleSheets = [feuille];
+}
+
+/** Une Scène ne doit jamais naviguer ni envoyer de formulaire quand le joueur clique dedans. */
+export function figer(doc: Document): void {
+  doc.addEventListener('click', (e) => e.preventDefault());
+  doc.addEventListener('submit', (e) => e.preventDefault());
 }
 
 export function elementsDeScene(doc: Document): Element[] {

@@ -55,8 +55,12 @@ La décomposition d'un Sélecteur CSS par le Testeur en fonctionnalités, chacun
 _Éviter_: lint, parsing
 
 **Requête ARIA**:
-Un Sélecteur qui désigne des éléments par leur rôle et leur nom accessible (ex : `getByRole('button', { name: 'Supprimer' })`).
+Un Sélecteur qui désigne des éléments par leur rôle et leur Nom accessible, écrit avec la syntaxe de Testing Library et éventuellement chaîné (ex : `getByRole('row', { name: /Chloé/ }).getByRole('button', { name: 'Supprimer' })`).
 _Éviter_: sélecteur d'accessibilité, role selector
+
+**Nom accessible**:
+Le texte par lequel une technologie d'assistance désigne un élément, calculé à partir de `aria-labelledby`, `aria-label`, du libellé natif ou du contenu.
+_Éviter_: label, libellé (qui n'en est qu'une source)
 
 **Page d'exemple**:
 Un Document cible fourni par le site, représentatif d'une interface réelle (formulaire, tableau, panier) ; ressource unique partagée par le Testeur, les Scénarios e2e et les Exemples.

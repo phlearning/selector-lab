@@ -13,7 +13,7 @@ export interface EtatTesteur {
 /** Au-delà, le HTML collé n'est plus mis dans le lien (limite pratique des URL partagées). */
 export const TAILLE_MAX_HTML_LIEN = 8000;
 
-const langages: Langage[] = ['css', 'xpath', 'dom'];
+const langages: Langage[] = ['css', 'xpath', 'dom', 'aria'];
 
 export function encoder(etat: EtatTesteur): { fragment: string; htmlOmis: boolean } {
   const params = new URLSearchParams({ l: etat.langage, s: etat.selecteur });

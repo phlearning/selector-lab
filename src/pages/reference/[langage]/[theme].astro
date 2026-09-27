@@ -31,6 +31,12 @@ const { titre, langage, intro, entrees } = theme.data;
       <Support cles={['api.Document.evaluate']} />
     </details>
   )}
+  {langage === 'aria' && (
+    <p class="notice">
+      Les Requêtes ARIA sont calculées par la bibliothèque JavaScript @testing-library/dom, et non par le navigateur :
+      pas de tableau de support ici. Chaque Exemple est tout de même réévalué en CI dans Chromium, Firefox et WebKit.
+    </p>
+  )}
   <nav class="sommaire-page" aria-label="Sur cette page">
     <ul>{entrees.map((e) => <li><a href={`#${e.id}`}><code>{e.titre}</code></a></li>)}</ul>
   </nav>

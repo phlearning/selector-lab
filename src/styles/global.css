@@ -1071,7 +1071,10 @@ main {
   list-style: none;
   margin: 0;
   padding: 0;
-  max-height: 60vh;
+}
+
+.jeu__cote nav {
+  max-height: 70vh;
   overflow-y: auto;
 }
 
@@ -1123,4 +1126,21 @@ main {
   text-decoration: underline;
   cursor: pointer;
   padding: 0;
+}
+
+.pastille--recommande {
+  color: var(--ok);
+  background: var(--ok-bg);
+}
+
+.jeu__titre-chapitre {
+  margin: 0.75rem 0 0.25rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg-muted);
+}
+
+.jeu__modes {
+  flex-wrap: wrap;
 }

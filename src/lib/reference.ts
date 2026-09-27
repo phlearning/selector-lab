@@ -8,6 +8,7 @@ export const langages = [
   { id: 'css', nom: 'CSS' },
   { id: 'xpath', nom: 'XPath 1.0' },
   { id: 'dom', nom: 'API DOM' },
+  { id: 'aria', nom: 'ARIA (Testing Library)' },
 ] as const;
 
 export function nomLangage(id: string): string {

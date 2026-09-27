@@ -104,3 +104,34 @@ test('restaure le document après une expression qui le modifie', async ({ page 
   await champSelecteur(page).fill('li.article');
   await expect(resultat(page)).toContainText('3 nœuds');
 });
+
+test('évalue une Requête ARIA chaînée venue d\'un lien, sans confirmation', async ({ page }) => {
+  await page.goto(
+    lien({ l: 'aria', p: 'tableau', s: "getByRole('row', { name: /Chloé Durand/ }).getByRole('button', { name: 'Supprimer' })" }),
+  );
+
+  await expect(page.getByRole('radio', { name: 'ARIA' })).toBeChecked();
+  await expect(resultat(page)).toContainText('button "Supprimer" dans tr[data-id="u3"]');
+  await expect(apercu(page).locator('[data-selector-lab]')).toHaveCount(1);
+});
+
+test('signale un getBy qui trouverait plusieurs éléments', async ({ page }) => {
+  await page.goto(lien({ l: 'aria', p: 'tableau', s: "getByRole('button', { name: 'Supprimer' })" }));
+
+  await expect(resultat(page)).toContainText('4 nœuds');
+  await expect(resultat(page)).toContainText('getByRole lèverait une erreur');
+});
+
+test('liste les noms accessibles quand le nom ne correspond pas', async ({ page }) => {
+  await page.goto(lien({ l: 'aria', p: 'panier', s: "getByRole('button', { name: 'Retirer' })" }));
+
+  await expect(resultat(page)).toContainText('Aucun nœud');
+  await expect(resultat(page)).toContainText('« Retirer Dune du panier »');
+  await expect(resultat(page)).toContainText('{ name: /texte/i }');
+});
+
+test("refuse une Requête ARIA qui n'est pas une requête connue", async ({ page }) => {
+  await page.goto(lien({ l: 'aria', p: 'tableau', s: "fetch('https://example.com')" }));
+
+  await expect(resultat(page)).toContainText("« fetch » n'est pas une requête connue");
+});

@@ -1,0 +1,92 @@
+titre: Autres requêtes
+langage: aria
+ordre: 2
+intro: |
+  Quand le rôle ne suffit pas, Testing Library et Playwright proposent d'autres requêtes centrées sur
+  l'utilisateur. Testing Library recommande de les utiliser dans cet ordre : `getByRole`, `getByLabelText`,
+  `getByPlaceholderText`, `getByText`, `getByDisplayValue`, `getByAltText`, `getByTitle`, et `getByTestId`
+  en dernier recours.
+entrees:
+  - id: get-by-label-text
+    titre: getByLabelText()
+    syntaxe: "getByLabelText('libellé')"
+    resume: >-
+      Le champ associé à un libellé, par `label for`, par un `label` englobant, par `aria-labelledby` ou par `aria-label`. Indispensable pour les champs sans rôle, comme les mots de passe.
+    exemples:
+      - selecteur: "getByLabelText('Mot de passe')"
+        page: formulaire
+        attendu: { noeuds: [ "input#mot-de-passe" ] }
+      - selecteur: "getByLabelText('Recevoir la newsletter')"
+        page: formulaire
+        note: le champ est à l'intérieur de son `label`.
+        attendu: { noeuds: [ "input[name=\"newsletter\"]" ] }
+
+  - id: get-by-placeholder-text
+    titre: getByPlaceholderText()
+    syntaxe: "getByPlaceholderText('texte indicatif')"
+    resume: >-
+      Un champ par son texte indicatif. À éviter si le champ a un libellé : le `placeholder` disparaît dès la saisie et n'est pas un vrai libellé.
+    exemples:
+      - selecteur: "getByPlaceholderText('vous@exemple.fr')"
+        page: formulaire
+        attendu: { noeuds: [ "input#email" ] }
+
+  - id: get-by-text
+    titre: getByText()
+    syntaxe: "getByText('texte')   getByText(/texte/i)"
+    resume: >-
+      Les éléments dont le texte correspond exactement (espaces normalisés), ou à l'expression régulière. Idéal pour les éléments non interactifs : messages, paragraphes, badges.
+    exemples:
+      - selecteur: "getByText('Plus disponible')"
+        page: panier
+        attendu: { noeuds: [ "p \"Plus disponible\" dans li[data-sku=\"LIV-017\"]" ] }
+      - selecteur: "getAllByText('Actif')"
+        page: tableau
+        attendu: { noeuds: [ "span \"Actif\" dans tr[data-id=\"u1\"]", "span \"Actif\" dans tr[data-id=\"u2\"]", "span \"Actif\" dans tr[data-id=\"u4\"]" ] }
+      - selecteur: "getAllByText(/fondation/i)"
+        page: panier
+        attendu: { noeuds: [ "h2 \"Fondation\" dans li[data-sku=\"LIV-017\"]" ] }
+    pieges:
+      - >-
+        Pour un élément interactif (bouton, lien), préférez `getByRole` avec `name` : il vérifie aussi que l'élément est bien un bouton.
+
+  - id: get-by-display-value
+    titre: getByDisplayValue()
+    syntaxe: "getByDisplayValue('valeur')"
+    resume: >-
+      Un champ par la valeur qu'il affiche : texte saisi, option sélectionnée d'une liste déroulante.
+    exemples:
+      - selecteur: "getByDisplayValue('AMI-2026')"
+        page: formulaire
+        attendu: { noeuds: [ "input#code-parrain" ] }
+      - selecteur: "getByDisplayValue('France')"
+        page: formulaire
+        attendu: { noeuds: [ "select#pays \"Choisir… France Belgique Suiss…\"" ] }
+
+  - id: get-by-alt-text
+    titre: getByAltText()
+    syntaxe: "getByAltText('texte alternatif')"
+    resume: Une image (ou un `area`, un `input[type=image]`) par son texte alternatif.
+    exemples:
+      - selecteur: "getByAltText('Couverture de Dune')"
+        page: panier
+        attendu: { noeuds: [ "img dans li[data-sku=\"LIV-001\"]" ] }
+      - selecteur: "getAllByAltText(/^Couverture/)"
+        page: panier
+        attendu: { noeuds: [ "img dans li[data-sku=\"LIV-001\"]", "img dans li[data-sku=\"LIV-017\"]" ] }
+
+  - id: get-by-title
+    titre: getByTitle()
+    syntaxe: "getByTitle('infobulle')"
+    resume: >-
+      Un élément par son attribut `title`. Rarement pertinent : l'infobulle n'est accessible ni au clavier ni sur écran tactile.
+
+  - id: get-by-test-id
+    titre: getByTestId()
+    syntaxe: "getByTestId('identifiant')"
+    resume: >-
+      Un élément par son attribut `data-testid`. Stable et explicite, mais invisible pour l'utilisateur : à réserver aux éléments qu'aucune autre requête ne distingue.
+    exemples:
+      - selecteur: "getByTestId('inscription-valider')"
+        page: formulaire
+        attendu: { noeuds: [ "button \"Créer mon compte\"" ] }

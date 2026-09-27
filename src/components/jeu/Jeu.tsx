@@ -1,26 +1,35 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { envelopper } from '../../lib/document';
 import { diagnostiquer } from '../../lib/diagnostic';
 import { avecReussite, charger, enregistrer, estReussi, progressionVide, type Mode, type Progression } from '../../lib/progression';
 import { evaluer, memeResultat, type ResultatType } from '../../lib/resultat';
 import { arbre, Balisage, type NoeudBalisage } from './Balisage';
-import { elementsDeScene, marquer, retirerMarques, styler } from './scene';
+import { elementsDeScene, figer, marquer, retirerMarques, styler } from './scene';
 
 export interface NiveauProp {
   id: string;
+  chapitre: string;
   titre: string;
   notion: string;
   consigne: string;
-  scene: string;
-  solutions: { css: string | null; xpath: string };
+  /** Document complet de la Scène : bibliothèque dessinée ou Page d'exemple. */
+  html: string;
+  solutions: Record<Mode, string | null>;
+  recommande?: Mode;
   /** Indices et Leçon déjà convertis en HTML au build. */
   indices: string[];
   lecon: string;
   reference: string;
 }
 
+export interface ChapitreProp {
+  id: string;
+  titre: string;
+}
+
 interface Props {
   niveaux: NiveauProp[];
+  chapitres: ChapitreProp[];
   base: string;
 }
 
@@ -29,9 +38,28 @@ type Retour =
   | { type: 'echec'; messages: string[] }
   | { type: 'reussite' };
 
-const NOMS_MODE: Record<Mode, string> = { css: 'CSS', xpath: 'XPath 1.0' };
+const NOMS_MODE: Record<Mode, string> = { css: 'CSS', xpath: 'XPath 1.0', aria: 'ARIA' };
+const MODES: Mode[] = ['css', 'xpath', 'aria'];
 
-/** Titre commun de toutes les Scènes : identique à celui des vérifications en CI. */
+/** Le Mode dans lequel se joue un Niveau : celui choisi s'il a une solution, sinon le premier disponible. */
+function modeEffectif(niveau: NiveauProp, choisi: Mode): Mode {
+  return niveau.solutions[choisi] ? choisi : MODES.find((m) => niveau.solutions[m])!;
+}
+
+function raisonDuRepli(niveau: NiveauProp, choisi: Mode, mode: Mode): string {
+  if (choisi === 'aria' && niveau.chapitre === 'bibliotheque') {
+    return `Les Requêtes ARIA visent de vraies interfaces : la bibliothèque n'a ni rôles ni noms accessibles. Ce Niveau se joue en ${NOMS_MODE[mode]}.`;
+  }
+  if (choisi === 'css' && mode === 'xpath') {
+    return 'CSS ne sait pas lire le texte ni renvoyer une valeur : ce Niveau se joue en XPath.';
+  }
+  if (choisi === 'aria') {
+    return `Aucune Requête ARIA ne désigne exactement ces éléments (la Leçon explique pourquoi) : ce Niveau se joue en ${NOMS_MODE[mode]}.`;
+  }
+  return `Ce Niveau n'a pas de solution en ${NOMS_MODE[choisi]} : il se joue en ${NOMS_MODE[mode]}.`;
+}
+
+/** Titre de la Scène vide utilisée pour détecter les réponses qui ne lisent pas la page. */
 const TITRE_SCENE = 'Niveau';
 
 function decrire(r: ResultatType): string {
@@ -85,7 +113,7 @@ function ignoreLaScene(mode: Mode, reponse: string, solution: string, surScene: 
   return memeResultat(evaluer(vide, mode, reponse), surScene) && !memeResultat(evaluer(vide, mode, solution), solutionSurScene);
 }
 
-export default function Jeu({ niveaux, base }: Props) {
+export default function Jeu({ niveaux, chapitres, base }: Props) {
   const [progression, setProgression] = useState<Progression>(progressionVide);
   const [index, setIndex] = useState(0);
   const [reponse, setReponse] = useState('');
@@ -105,10 +133,10 @@ export default function Jeu({ niveaux, base }: Props) {
   survolRef.current = survol;
 
   const niveau = niveaux[index];
-  const xpathSeulement = niveau.solutions.css === null;
-  const mode: Mode = xpathSeulement ? 'xpath' : progression.mode;
+  const modesDuNiveau = MODES.filter((m) => niveau.solutions[m]);
+  const mode = modeEffectif(niveau, progression.mode);
   const solution = niveau.solutions[mode]!;
-  const srcdoc = useMemo(() => envelopper(niveau.scene, TITRE_SCENE), [niveau.id]);
+  const srcdoc = niveau.html;
   const pret = docCharge === srcdoc;
 
   // Chargement de la Progression et du Niveau demandé (lien `#n=...`, sinon le dernier joué).
@@ -182,7 +210,7 @@ export default function Jeu({ niveaux, base }: Props) {
     }
     const messages = memeResultat(joueur, cibles)
       ? ["Ta réponse ne lit pas la Scène : elle donnerait le même résultat sur une étagère vide. Écris une expression qui cherche le résultat dans la page."]
-      : [...expliquerEchec(joueur, cibles), ...diagnostiquer(mode, reponse, joueur).map((d) => d.message)];
+      : [...expliquerEchec(joueur, cibles), ...diagnostiquer(mode, reponse, joueur, iframe.current?.contentDocument ?? undefined).map((d) => d.message)];
     if (joueur.type === 'erreur') messages.unshift(`Erreur : ${joueur.message}`);
     setRetour({ type: 'echec', messages });
     champ.current?.classList.remove('secoue');
@@ -210,7 +238,8 @@ export default function Jeu({ niveaux, base }: Props) {
     const frame = e.currentTarget as HTMLIFrameElement;
     const doc = frame.contentDocument;
     if (!doc) return;
-    styler(doc);
+    styler(doc, niveau.chapitre !== 'bibliotheque');
+    figer(doc);
     setBalisage(arbre(doc));
     doc.addEventListener('mouseover', (ev) => {
       const i = elementsDeScene(doc).indexOf(ev.target as Element);
@@ -229,8 +258,10 @@ export default function Jeu({ niveaux, base }: Props) {
   }, [survol, pret]);
 
   const elementSurvole = survol !== null ? balisageAPlat(balisage)[survol] : null;
-  const reussisDansMode = niveaux.filter((n) => estReussi(progression, n.id, n.solutions.css === null ? 'xpath' : progression.mode)).length;
+  const reussisDansMode = niveaux.filter((n) => estReussi(progression, n.id, modeEffectif(n, progression.mode))).length;
   const dernier = index === niveaux.length - 1;
+  const finDeChapitre = dernier || niveaux[index + 1].chapitre !== niveau.chapitre;
+  const titreChapitre = (id: string) => chapitres.find((c) => c.id === id)?.titre ?? id;
 
   return (
     <div class="jeu">
@@ -252,14 +283,15 @@ export default function Jeu({ niveaux, base }: Props) {
             →
           </button>
           <span class="jeu__notion">{niveau.notion}</span>
-          {xpathSeulement && <span class="pastille pastille--xpath">XPath uniquement</span>}
+          {modesDuNiveau.length === 1 && <span class="pastille pastille--xpath">{NOMS_MODE[modesDuNiveau[0]]} uniquement</span>}
+          {niveau.recommande && modesDuNiveau.length > 1 && (
+            <span class="pastille pastille--recommande">{NOMS_MODE[niveau.recommande]} recommandé en e2e</span>
+          )}
           {estReussi(progression, niveau.id, mode) && <span class="pastille pastille--reussi">Réussi</span>}
         </header>
 
         <h2 class="jeu__consigne">{niveau.consigne}</h2>
-        {xpathSeulement && progression.mode === 'css' && (
-          <p class="jeu__note">CSS ne sait pas lire le texte ni renvoyer une valeur : ce Niveau se joue en XPath.</p>
-        )}
+        {mode !== progression.mode && <p class="jeu__note">{raisonDuRepli(niveau, progression.mode, mode)}</p>}
 
         <div class="jeu__scene">
           <p class="jeu__survol" aria-hidden="true">
@@ -270,7 +302,7 @@ export default function Jeu({ niveaux, base }: Props) {
 
         <form class="jeu__saisie" onSubmit={valider}>
           <label class="jeu__label" for="jeu-reponse">
-            {mode === 'css' ? 'Ton sélecteur CSS' : 'Ton expression XPath'}
+            {{ css: 'Ton sélecteur CSS', xpath: 'Ton expression XPath', aria: 'Ta requête ARIA' }[mode]}
           </label>
           <div class="jeu__ligne">
             <input
@@ -283,7 +315,9 @@ export default function Jeu({ niveaux, base }: Props) {
               autocapitalize="off"
               value={reponse}
               readOnly={retour.type === 'reussite'}
-              placeholder={mode === 'css' ? 'Tape un sélecteur CSS' : 'Tape une expression XPath'}
+              placeholder={
+                { css: 'Tape un sélecteur CSS', xpath: 'Tape une expression XPath', aria: "getByRole('button', { name: '...' })" }[mode]
+              }
               onInput={(e) => {
                 setReponse((e.target as HTMLInputElement).value);
                 if (retour.type === 'echec') setRetour({ type: 'aucun' });
@@ -308,8 +342,10 @@ export default function Jeu({ niveaux, base }: Props) {
               <p>
                 <strong>Bravo !</strong>{' '}
                 {dernier
-                  ? `Tu as terminé la bibliothèque en ${NOMS_MODE[mode]}. Essaie l'autre Mode, ou teste tes sélecteurs sur de vraies pages dans le Testeur.`
-                  : 'Niveau réussi.'}
+                  ? `Tu as terminé tous les Chapitres. Essaie un autre Mode, ou teste tes sélecteurs sur tes propres pages dans le Testeur.`
+                  : finDeChapitre
+                    ? `Chapitre « ${titreChapitre(niveau.chapitre)} » terminé. Au suivant : « ${titreChapitre(niveaux[index + 1].chapitre)} ».`
+                    : 'Niveau réussi.'}
               </p>
               <div class="jeu__lecon" dangerouslySetInnerHTML={{ __html: niveau.lecon }} />
               <p>
@@ -343,7 +379,7 @@ export default function Jeu({ niveaux, base }: Props) {
       <aside class="jeu__cote">
         <fieldset class="jeu__modes">
           <legend>Mode</legend>
-          {(['css', 'xpath'] as Mode[]).map((m) => (
+          {MODES.map((m) => (
             <label class={progression.mode === m ? 'choix choix--actif' : 'choix'}>
               <input type="radio" name="mode" value={m} checked={progression.mode === m} onChange={() => changerMode(m)} />
               {NOMS_MODE[m]}
@@ -355,25 +391,31 @@ export default function Jeu({ niveaux, base }: Props) {
           <p class="jeu__bilan">
             {reussisDansMode} / {niveaux.length} Niveaux réussis en {NOMS_MODE[progression.mode]}
           </p>
-          <ol class="jeu__niveaux">
-            {niveaux.map((n, i) => {
-              const reussi = estReussi(progression, n.id, n.solutions.css === null ? 'xpath' : progression.mode);
-              return (
-                <li>
-                  <button
-                    type="button"
-                    class={['jeu__niveau', i === index && 'jeu__niveau--courant', reussi && 'jeu__niveau--reussi'].filter(Boolean).join(' ')}
-                    aria-current={i === index ? 'step' : undefined}
-                    onClick={() => allerA(i)}
-                  >
-                    <span class="jeu__niveau-num">{i + 1}</span>
-                    <span>{n.titre}</span>
-                    {reussi && <span class="jeu__coche" aria-label="réussi">✓</span>}
-                  </button>
-                </li>
-              );
-            })}
-          </ol>
+          {chapitres.map((chapitre) => (
+            <div class="jeu__chapitre">
+              <h2 class="jeu__titre-chapitre">{chapitre.titre}</h2>
+              <ol class="jeu__niveaux">
+                {niveaux.map((n, i) => {
+                  if (n.chapitre !== chapitre.id) return null;
+                  const reussi = estReussi(progression, n.id, modeEffectif(n, progression.mode));
+                  return (
+                    <li>
+                      <button
+                        type="button"
+                        class={['jeu__niveau', i === index && 'jeu__niveau--courant', reussi && 'jeu__niveau--reussi'].filter(Boolean).join(' ')}
+                        aria-current={i === index ? 'step' : undefined}
+                        onClick={() => allerA(i)}
+                      >
+                        <span class="jeu__niveau-num">{i + 1}</span>
+                        <span>{n.titre}</span>
+                        {reussi && <span class="jeu__coche" aria-label="réussi">✓</span>}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+          ))}
         </nav>
 
         <button type="button" class="jeu__reinitialiser" onClick={reinitialiser}>
